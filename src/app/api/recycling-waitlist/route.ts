@@ -1,71 +1,54 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db';
-import { rateLimit, sanitizeString } from '@/lib/security';
-import { recyclingWaitlistSchema } from '@/lib/validations';
+import connectDB from '@/lib/db';
+import RecyclingWaitlist from '@/lib/models/RecyclingWaitlist';
+import { rateLimit } from '@/lib/security';
+import { z } from 'zod';
+
+const waitlistSchema = z.object({
+  email: z.string().email('Invalid email address'),
+  preferredLanguage: z.enum(['en', 'fr']).default('en'),
+});
 
 export async function POST(request: Request) {
   try {
     const forwardedFor = request.headers.get('x-forwarded-for');
     const ip = forwardedFor ? forwardedFor.split(',')[0].trim() : '127.0.0.1';
 
-    // Strict rate limit on waitlist submissions: 5 per minute per IP
     const rateCheck = rateLimit(`waitlist:${ip}`, 5, 60000);
     if (!rateCheck.allowed) {
-      return NextResponse.json(
-        {
-          error: 'Too many submissions. Please try again shortly.',
-          retryAfter: rateCheck.reset,
-        },
-        {
-          status: 429,
-          headers: {
-            'Retry-After': String(rateCheck.reset),
-            'X-RateLimit-Limit': String(rateCheck.limit),
-            'X-RateLimit-Remaining': String(rateCheck.remaining),
-          },
-        }
-      );
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
     }
 
     const body = await request.json();
-    const parsed = recyclingWaitlistSchema.safeParse(body);
+    const parsed = waitlistSchema.safeParse(body);
 
     if (!parsed.success) {
       return NextResponse.json(
-        {
-          error: 'Invalid waitlist submission',
-          details: parsed.error.flatten().fieldErrors,
-        },
+        { error: 'Validation failed', details: parsed.error.flatten().fieldErrors },
         { status: 400 }
       );
     }
 
-    const cleanEmail = sanitizeString(parsed.data.email);
-    const existing = await db.recyclingWaitlist.findUnique({
-      where: { email: cleanEmail },
-    });
+    await connectDB();
 
+    const { email, preferredLanguage } = parsed.data;
+
+    const existing = await RecyclingWaitlist.findOne({ email: email.toLowerCase() });
     if (existing) {
-      return NextResponse.json({
-        success: true,
-        message: 'You are already registered on our circular recycling waitlist!',
-      });
+      return NextResponse.json(
+        { success: true, message: 'Already on the waitlist', alreadyRegistered: true },
+        { status: 200 }
+      );
     }
 
-    const subscriber = await db.recyclingWaitlist.create({
-      data: {
-        email: cleanEmail,
-        preferredLanguage: parsed.data.languagePref,
-      },
-    });
+    await RecyclingWaitlist.create({ email, preferredLanguage });
 
     return NextResponse.json({
       success: true,
-      subscriber,
-      message: 'Successfully subscribed to the circular recycling program waitlist!',
+      message: 'Successfully added to recycling waitlist',
     });
   } catch (error) {
-    console.error('Waitlist error:', error);
-    return NextResponse.json({ error: 'Failed to process subscription' }, { status: 500 });
+    console.error('POST /api/recycling-waitlist error:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

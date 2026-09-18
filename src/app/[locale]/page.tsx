@@ -2,7 +2,8 @@ import React from 'react';
 import Link from 'next/link';
 import { Locale } from '@/lib/i18n/config';
 import { getDictionary } from '@/lib/i18n/get-dictionary';
-import { db } from '@/lib/db';
+import connectDB from '@/lib/db';
+import Product from '@/lib/models/Product';
 import { Hero } from '@/components/home/Hero';
 import { ProductCard } from '@/components/catalog/ProductCard';
 import { ProductType } from '@/lib/types/product';
@@ -13,62 +14,55 @@ interface HomePageProps {
   params: { locale: Locale };
 }
 
+function resolveTranslation(product: any, locale: string) {
+  return (
+    product.translations.find((t: any) => t.languageCode === locale) ||
+    product.translations.find((t: any) => t.languageCode === 'en') ||
+    product.translations[0]
+  );
+}
+
+function resolveSpecs(t: any): Record<string, string> {
+  if (!t?.specs) return {};
+  if (t.specs instanceof Map) return Object.fromEntries(t.specs);
+  return Object.fromEntries(Object.entries(t.specs as Record<string, string>));
+}
+
 export default async function HomePage({ params }: HomePageProps) {
   const dictionary = await getDictionary(params.locale);
 
-  // Fetch featured products from db
   let featuredProducts: ProductType[] = [];
   try {
-    const rawProducts = await db.product.findMany({
-      where: { featured: true },
-      take: 3,
-      include: { translations: true },
-      orderBy: { createdAt: 'desc' },
-    });
+    await connectDB();
 
-    const productsToMap = rawProducts.length > 0 ? rawProducts : await db.product.findMany({
-      take: 3,
-      include: { translations: true },
-      orderBy: { createdAt: 'desc' },
-    });
+    let rawProducts = await Product.find({ featured: true })
+      .sort({ createdAt: -1 })
+      .limit(3)
+      .lean();
 
-    featuredProducts = productsToMap.map((p) => {
-      let t = p.translations.find((tr) => tr.languageCode === params.locale);
-      if (!t) t = p.translations.find((tr) => tr.languageCode === 'en');
-      if (!t && p.translations.length > 0) t = p.translations[0];
+    if (rawProducts.length === 0) {
+      rawProducts = await Product.find({}).sort({ createdAt: -1 }).limit(3).lean();
+    }
 
-      let parsedImages: string[] = [];
-      try {
-        parsedImages = JSON.parse(p.images);
-      } catch {
-        parsedImages = p.images ? [p.images] : [];
-      }
-
-      let parsedSpecs: Record<string, any> = {};
-      if (t?.specs) {
-        try {
-          parsedSpecs = JSON.parse(t.specs);
-        } catch {
-          parsedSpecs = {};
-        }
-      }
-
+    featuredProducts = rawProducts.map((p) => {
+      const t = resolveTranslation(p, params.locale);
+      const specs = resolveSpecs(t);
       return {
-        id: p.id,
+        id: String(p._id),
         slug: p.slug,
         price: p.price,
         comparePrice: p.comparePrice,
         stock: p.stock,
         category: p.category,
         featured: p.featured,
-        images: parsedImages,
+        images: p.images || [],
         name: t?.name || p.slug,
         description: t?.description || '',
-        specs: parsedSpecs,
-        technology: parsedSpecs.technology || (p.category === 'PRINTER' ? 'FDM' : 'Hardware'),
-        speed: parsedSpecs.speed || parsedSpecs.printSpeed,
-        buildVolume: parsedSpecs.buildVolume || parsedSpecs.volume,
-        brand: parsedSpecs.brand || 'CBV Industrial',
+        specs,
+        technology: specs.technology || (p.category === 'PRINTER' ? 'FDM' : 'Hardware'),
+        speed: specs.speed || specs['Print Speed'],
+        buildVolume: specs.buildVolume || specs['Build Volume'],
+        brand: specs.brand || 'CBV Industrial',
       };
     });
   } catch (e) {
@@ -150,7 +144,7 @@ export default async function HomePage({ params }: HomePageProps) {
                 </h3>
                 <p className="text-xs text-charcoal-muted leading-relaxed">
                   {params.locale === 'fr'
-                    ? 'Tolérance de positionnement d’axe Z de 0.02 mm et cinématique CoreXY rapide.'
+                    ? "Tolérance de positionnement d'axe Z de 0.02 mm et cinématique CoreXY rapide."
                     : 'Engineered with rigid CoreXY motion, auto-resonance calibration, and 0.02mm layer accuracy.'}
                 </p>
               </div>

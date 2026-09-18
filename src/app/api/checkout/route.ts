@@ -1,22 +1,21 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import connectDB from '@/lib/db';
+import Product from '@/lib/models/Product';
+import Order from '@/lib/models/Order';
 import { rateLimit } from '@/lib/security';
 import { checkoutSchema } from '@/lib/validations';
 import { stripe, isStripeConfigured } from '@/lib/stripe';
+import mongoose from 'mongoose';
 
 export async function POST(request: Request) {
   try {
     const forwardedFor = request.headers.get('x-forwarded-for');
     const ip = forwardedFor ? forwardedFor.split(',')[0].trim() : '127.0.0.1';
 
-    // Rate limiting: 15 checkout attempts per minute per IP
     const rateCheck = rateLimit(`checkout:${ip}`, 15, 60000);
     if (!rateCheck.allowed) {
       return NextResponse.json(
-        {
-          error: 'Too many checkout attempts. Please wait.',
-          retryAfter: rateCheck.reset,
-        },
+        { error: 'Too many checkout attempts. Please wait.' },
         {
           status: 429,
           headers: {
@@ -33,154 +32,135 @@ export async function POST(request: Request) {
 
     if (!parsed.success) {
       return NextResponse.json(
-        {
-          error: 'Invalid checkout payload',
-          details: parsed.error.flatten().fieldErrors,
-        },
+        { error: 'Invalid checkout payload', details: parsed.error.flatten().fieldErrors },
         { status: 400 }
       );
     }
 
     const { customerName, customerEmail, shippingAddress, items } = parsed.data;
 
-    // Fetch products from database and verify stock
+    await connectDB();
+
+    // Fetch products and verify stock
     let calculatedTotal = 0;
-    const orderItemsData: { productId: string; quantity: number; unitPrice: number }[] = [];
-    const stripeLineItems: any[] = [];
+    const orderItems: {
+      productId: mongoose.Types.ObjectId;
+      slug: string;
+      name: string;
+      quantity: number;
+      unitPrice: number;
+    }[] = [];
+    const stripeLineItems: {
+      price_data: {
+        currency: string;
+        product_data: { name: string };
+        unit_amount: number;
+      };
+      quantity: number;
+    }[] = [];
 
     for (const item of items) {
-      const product = await db.product.findUnique({
-        where: { id: item.productId },
-        include: { translations: true },
-      });
+      const isValidObjectId = mongoose.Types.ObjectId.isValid(item.productId);
+      const product = await Product.findOne(
+        isValidObjectId
+          ? { $or: [{ _id: item.productId }, { slug: item.productId }] }
+          : { slug: item.productId }
+      );
 
       if (!product) {
         return NextResponse.json(
-          { error: `Product with ID ${item.productId} was not found` },
+          { error: `Product "${item.productId}" not found` },
           { status: 404 }
         );
       }
-
       if (product.stock < item.quantity) {
-        const prodName = product.translations[0]?.name || product.slug;
         return NextResponse.json(
-          { error: `Insufficient stock for product "${prodName}". Available: ${product.stock}` },
-          { status: 400 }
+          { error: `Insufficient stock for "${product.slug}". Available: ${product.stock}` },
+          { status: 409 }
         );
       }
 
-      const itemTotal = product.price * item.quantity;
-      calculatedTotal += itemTotal;
+      const activeTr =
+        product.translations.find((t) => t.languageCode === 'en') ||
+        product.translations[0];
 
-      const productName =
-        product.translations.find((t) => t.languageCode === 'en')?.name ||
-        product.translations[0]?.name ||
-        product.slug;
-
-      orderItemsData.push({
-        productId: product.id,
+      calculatedTotal += product.price * item.quantity;
+      orderItems.push({
+        productId: product._id as mongoose.Types.ObjectId,
+        slug: product.slug,
+        name: activeTr?.name || product.slug,
         quantity: item.quantity,
         unitPrice: product.price,
       });
-
       stripeLineItems.push({
         price_data: {
           currency: 'eur',
-          product_data: {
-            name: productName,
-            metadata: {
-              productId: product.id,
-              slug: product.slug,
-              category: product.category,
-            },
-          },
+          product_data: { name: activeTr?.name || product.slug },
           unit_amount: Math.round(product.price * 100),
         },
         quantity: item.quantity,
       });
     }
 
-    const orderNumber = `CBV-${Date.now().toString(36).toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    // Generate order number
+    const orderNumber = `CBV-${Date.now()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
 
-    let stripeSessionUrl: string | null = null;
-    let stripeSessionId: string | null = null;
-
-    if (isStripeConfigured && stripe) {
-      const session = await stripe.checkout.sessions.create({
-        payment_method_types: ['card'],
-        mode: 'payment',
-        customer_email: customerEmail,
-        line_items: stripeLineItems,
-        success_url: `${appUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}&order_number=${orderNumber}`,
-        cancel_url: `${appUrl}/checkout/cancelled?order_number=${orderNumber}`,
-        metadata: {
-          orderNumber,
-          customerName,
-        },
+    // Deduct stock
+    for (const orderItem of orderItems) {
+      await Product.findByIdAndUpdate(orderItem.productId, {
+        $inc: { stock: -orderItem.quantity },
       });
-
-      stripeSessionId = session.id;
-      stripeSessionUrl = session.url;
-    } else {
-      // Development simulated session
-      stripeSessionId = `cs_test_cbv_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 9)}`;
-      stripeSessionUrl = `${appUrl}/checkout/success?session_id=${stripeSessionId}&order_number=${orderNumber}&mock=true`;
     }
 
-    // Create order with order items in database transaction
-    const newOrder = await db.$transaction(async (tx) => {
-      // Deduct stock
-      for (const item of items) {
-        await tx.product.update({
-          where: { id: item.productId },
-          data: { stock: { decrement: item.quantity } },
-        });
-      }
-
-      return tx.order.create({
-        data: {
-          orderNumber,
-          customerName,
-          customerEmail,
-          shippingAddress: JSON.stringify(shippingAddress),
-          totalAmount: parseFloat(calculatedTotal.toFixed(2)),
-          currency: 'EUR',
-          status: 'PENDING',
-          paymentStatus: isStripeConfigured ? 'PENDING' : 'PAID',
-          paymentMethod: 'STRIPE',
-          stripeSessionId,
-          items: {
-            create: orderItemsData,
-          },
-        },
-        include: {
-          items: {
-            include: {
-              product: {
-                include: {
-                  translations: true,
-                },
-              },
-            },
-          },
-        },
-      });
+    // Create order
+    const order = await Order.create({
+      orderNumber,
+      customerName,
+      customerEmail,
+      shippingAddress,
+      totalAmount: calculatedTotal,
+      currency: 'EUR',
+      status: 'PENDING',
+      paymentStatus: 'PENDING',
+      paymentMethod: isStripeConfigured ? 'STRIPE' : 'MOCK',
+      items: orderItems,
     });
 
+    // Stripe checkout
+    if (isStripeConfigured && stripe) {
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+      const session = await stripe.checkout.sessions.create({
+        payment_method_types: ['card'],
+        line_items: stripeLineItems,
+        mode: 'payment',
+        success_url: `${appUrl}/checkout/success?order=${orderNumber}`,
+        cancel_url: `${appUrl}/checkout/cancel`,
+        customer_email: customerEmail,
+        metadata: { orderNumber, orderId: String(order._id) },
+      });
+
+      await Order.findByIdAndUpdate(order._id, { stripeSessionId: session.id });
+
+      return NextResponse.json({
+        success: true,
+        orderNumber,
+        checkoutUrl: session.url,
+        totalAmount: calculatedTotal,
+        order,
+      });
+    }
+
+    // Mock payment mode
     return NextResponse.json({
       success: true,
-      orderNumber: newOrder.orderNumber,
-      orderId: newOrder.id,
-      totalAmount: newOrder.totalAmount,
-      currency: newOrder.currency,
-      stripeSessionId,
-      checkoutUrl: stripeSessionUrl,
-      order: newOrder,
-      message: 'Stripe checkout session initialized successfully',
+      orderNumber,
+      checkoutUrl: `/checkout/success?order=${orderNumber}`,
+      totalAmount: calculatedTotal,
+      mock: true,
+      order,
     });
   } catch (error) {
-    console.error('Checkout error:', error);
+    console.error('POST /api/checkout error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

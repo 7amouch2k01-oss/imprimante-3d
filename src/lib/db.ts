@@ -1,14 +1,36 @@
-import { PrismaClient } from '@prisma/client';
+import mongoose from 'mongoose';
 
-const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient | undefined;
+const MONGODB_URI = process.env.MONGODB_URI || '';
+
+if (!MONGODB_URI) {
+  console.warn('⚠️  MONGODB_URI not set — DB calls will fail');
+}
+
+// Global cache to prevent multiple connections in Next.js dev hot-reload
+const globalWithMongoose = globalThis as typeof globalThis & {
+  mongoose: { conn: typeof mongoose | null; promise: Promise<typeof mongoose> | null };
 };
 
-export const db =
-  globalForPrisma.prisma ??
-  new PrismaClient({
-    log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
-  });
+if (!globalWithMongoose.mongoose) {
+  globalWithMongoose.mongoose = { conn: null, promise: null };
+}
 
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = db;
-export default db;
+const cached = globalWithMongoose.mongoose;
+
+export async function connectDB(): Promise<typeof mongoose> {
+  if (cached.conn) return cached.conn;
+
+  if (!cached.promise) {
+    cached.promise = mongoose.connect(MONGODB_URI, {
+      bufferCommands: false,
+      maxPoolSize: 10,
+      serverSelectionTimeoutMS: 10000,
+      socketTimeoutMS: 45000,
+    });
+  }
+
+  cached.conn = await cached.promise;
+  return cached.conn;
+}
+
+export default connectDB;

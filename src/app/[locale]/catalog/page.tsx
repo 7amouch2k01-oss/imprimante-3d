@@ -2,7 +2,8 @@ import React from 'react';
 import type { Metadata } from 'next';
 import { Locale } from '@/lib/i18n/config';
 import { getDictionary } from '@/lib/i18n/get-dictionary';
-import { db } from '@/lib/db';
+import connectDB from '@/lib/db';
+import Product from '@/lib/models/Product';
 import { ProductType } from '@/lib/types/product';
 import { ProductGrid } from '@/components/catalog/ProductGrid';
 import { Printer } from 'lucide-react';
@@ -11,9 +12,7 @@ interface CatalogPageProps {
   params: { locale: Locale };
 }
 
-export async function generateMetadata({
-  params,
-}: CatalogPageProps): Promise<Metadata> {
+export async function generateMetadata({ params }: CatalogPageProps): Promise<Metadata> {
   const dictionary = await getDictionary(params.locale);
   return {
     title: dictionary.catalog.title || '3D Printers Catalog',
@@ -21,57 +20,45 @@ export async function generateMetadata({
   };
 }
 
+function resolveSpecs(t: any): Record<string, string> {
+  if (!t?.specs) return {};
+  if (t.specs instanceof Map) return Object.fromEntries(t.specs);
+  return Object.fromEntries(Object.entries(t.specs as Record<string, string>));
+}
+
 export default async function CatalogPage({ params }: CatalogPageProps) {
   const dictionary = await getDictionary(params.locale);
 
   let products: ProductType[] = [];
   try {
-    const rawProducts = await db.product.findMany({
-      include: {
-        translations: true,
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
+    await connectDB();
+
+    const rawProducts = await Product.find({}).sort({ createdAt: -1 }).lean();
 
     products = rawProducts.map((p) => {
-      let t = p.translations.find((tr) => tr.languageCode === params.locale);
-      if (!t) t = p.translations.find((tr) => tr.languageCode === 'en');
-      if (!t && p.translations.length > 0) t = p.translations[0];
+      const t =
+        p.translations.find((tr: any) => tr.languageCode === params.locale) ||
+        p.translations.find((tr: any) => tr.languageCode === 'en') ||
+        p.translations[0];
 
-      let parsedImages: string[] = [];
-      try {
-        parsedImages = JSON.parse(p.images);
-      } catch {
-        parsedImages = p.images ? [p.images] : [];
-      }
-
-      let parsedSpecs: Record<string, any> = {};
-      if (t?.specs) {
-        try {
-          parsedSpecs = JSON.parse(t.specs);
-        } catch {
-          parsedSpecs = {};
-        }
-      }
+      const specs = resolveSpecs(t);
 
       return {
-        id: p.id,
+        id: String(p._id),
         slug: p.slug,
         price: p.price,
         comparePrice: p.comparePrice,
         stock: p.stock,
         category: p.category,
         featured: p.featured,
-        images: parsedImages,
+        images: p.images || [],
         name: t?.name || p.slug,
         description: t?.description || '',
-        specs: parsedSpecs,
-        technology: parsedSpecs.technology || (p.category === 'PRINTER' ? 'FDM' : 'Hardware'),
-        speed: parsedSpecs.speed || parsedSpecs.printSpeed,
-        buildVolume: parsedSpecs.buildVolume || parsedSpecs.volume,
-        brand: parsedSpecs.brand || 'CBV Industrial',
+        specs,
+        technology: specs.technology || (p.category === 'PRINTER' ? 'FDM' : 'Hardware'),
+        speed: specs.speed || specs['Print Speed'],
+        buildVolume: specs.buildVolume || specs['Build Volume'],
+        brand: specs.brand || 'CBV Industrial',
       };
     });
   } catch (error) {
