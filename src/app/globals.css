@@ -15,6 +15,17 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Global Icon Styling: Default monochrome/black-and-white, transitions to green on hover */
+svg.lucide {
+  transition: color 0.2s ease, stroke 0.2s ease, transform 0.2s ease;
+}
+
+button:hover svg.lucide,
+a:hover svg.lucide,
+.group:hover svg.lucide {
+  color: #116B36 !important;
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;

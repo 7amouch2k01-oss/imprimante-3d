@@ -26,8 +26,8 @@ export function Header({ locale, dictionary }: HeaderProps) {
         <span className="inline-block w-2 h-2 rounded-full bg-eco-400 animate-pulse" />
         <span>
           {isFr
-            ? '🇹🇳 Atelier d’impression 3D en Tunisie — Produits personnalisés sur-mesure & livraison 24-48h'
-            : '🇹🇳 3D Printing Studio in Tunisia — Custom on-demand creations & fast nationwide delivery'}
+            ? 'Atelier d’impression 3D en Tunisie — Produits personnalisés sur-mesure & livraison 24-48h'
+            : '3D Printing Studio in Tunisia — Custom on-demand creations & fast nationwide delivery'}
         </span>
       </div>
 
@@ -43,9 +43,9 @@ export function Header({ locale, dictionary }: HeaderProps) {
           <nav className="hidden md:flex items-center gap-1 bg-surface-subtle p-1.5 rounded-2xl border border-surface-border">
             <Link
               href={`/${locale}/catalog`}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-charcoal hover:bg-white hover:text-eco-600 transition-all shadow-2xs"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-charcoal hover:bg-white hover:text-eco-600 transition-all shadow-2xs group"
             >
-              <Grid className="w-3.5 h-3.5 text-eco-500" />
+              <Grid className="w-3.5 h-3.5 text-charcoal-muted group-hover:text-eco-500 transition-colors" />
               <span>{isFr ? 'Catalogue Produits 3D' : '3D Products Catalog'}</span>
             </Link>
 
@@ -54,7 +54,7 @@ export function Header({ locale, dictionary }: HeaderProps) {
               className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-white bg-eco-500 hover:bg-eco-600 transition-all shadow-xs"
             >
               <Wand2 className="w-3.5 h-3.5" />
-              <span>{isFr ? 'Commander Sur-Mesure ✨' : 'Custom Order ✨'}</span>
+              <span>{isFr ? 'Commander Sur-Mesure' : 'Custom Order'}</span>
             </Link>
 
             <Link
@@ -62,7 +62,7 @@ export function Header({ locale, dictionary }: HeaderProps) {
               className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-charcoal-muted hover:text-charcoal transition-all"
             >
               <span>{isFr ? 'Éco-Recyclage' : 'Eco-Recycling'}</span>
-              <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-amber-100 text-amber-800 font-bold uppercase">
+              <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-surface-border text-charcoal-black font-bold uppercase">
                 Bientôt
               </span>
             </Link>
@@ -82,7 +82,7 @@ export function Header({ locale, dictionary }: HeaderProps) {
                 }`}
                 aria-label="Tunisian Dinar"
               >
-                <span>🇹🇳 DT</span>
+                <span>DT (TND)</span>
               </button>
               <button
                 type="button"
@@ -94,7 +94,7 @@ export function Header({ locale, dictionary }: HeaderProps) {
                 }`}
                 aria-label="Euro Currency"
               >
-                <span>€ EUR</span>
+                <span>EUR (€)</span>
               </button>
             </div>
 

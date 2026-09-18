@@ -15,6 +15,8 @@ import {
   Tag,
 } from 'lucide-react';
 
+import { CategoryIcon } from '@/components/ui/CategoryIcon';
+
 interface CustomOrderViewProps {
   locale: Locale;
   dictionary: any;
@@ -23,7 +25,6 @@ interface CustomOrderViewProps {
 const CATEGORIES = [
   {
     id: 'KEYCHAINS',
-    icon: '🔑',
     labelFr: 'Porte-clés personnalisés',
     labelEn: 'Custom Keychains',
     descFr: 'Prénom, marque voiture, logo, initiales, flexible (5 – 16 DT)',
@@ -32,7 +33,6 @@ const CATEGORIES = [
   },
   {
     id: 'PHONE_STANDS',
-    icon: '📱',
     labelFr: 'Supports téléphone',
     labelEn: 'Phone Stands',
     descFr: 'Support bureau, voiture, designs anime/gaming, prénom gravé',
@@ -41,7 +41,6 @@ const CATEGORIES = [
   },
   {
     id: 'GAMING_ACCESSORIES',
-    icon: '🎧',
     labelFr: 'Accessoires gaming',
     labelEn: 'Gaming Accessories',
     descFr: 'Support casque, support manette PS5/Xbox, passe-câbles',
@@ -50,7 +49,6 @@ const CATEGORIES = [
   },
   {
     id: 'DECORATION',
-    icon: '🏠',
     labelFr: 'Décoration & Maison',
     labelEn: 'Home & 3D Decor',
     descFr: 'Prénoms 3D, calligraphie arabe/islamique, fleurs, vases facettés',
@@ -59,7 +57,6 @@ const CATEGORIES = [
   },
   {
     id: 'GIFTS',
-    icon: '🎁',
     labelFr: 'Cadeaux personnalisés',
     labelEn: 'Custom Gifts',
     descFr: 'Prénom + date, cadeau couple, anniversaire, souvenir diplôme',
@@ -68,7 +65,6 @@ const CATEGORIES = [
   },
   {
     id: 'PIGGY_BANKS',
-    icon: '🪙',
     labelFr: 'Tirelires 3D',
     labelEn: '3D Piggy Banks',
     descFr: 'Formes voitures, animaux, gaming avec prénom gravé',
@@ -77,7 +73,6 @@ const CATEGORIES = [
   },
   {
     id: 'UTILITY',
-    icon: '🧰',
     labelFr: 'Objets Utilitaires',
     labelEn: 'Utility & Tools',
     descFr: 'Accroche-clés mural, porte-stylo, crochets, organisateurs',
@@ -219,14 +214,20 @@ Mon nom: ${customerName || ''}`
                     key={cat.id}
                     type="button"
                     onClick={() => setSelectedCat(cat.id)}
-                    className={`p-4 rounded-2xl border text-left transition-all relative flex flex-col justify-between ${
+                    className={`group p-4 rounded-2xl border text-left transition-all relative flex flex-col justify-between cursor-pointer ${
                       isSelected
                         ? 'border-eco-500 bg-eco-50/50 shadow-md ring-2 ring-eco-500/20'
-                        : 'border-surface-border bg-surface-light hover:border-charcoal/30'
+                        : 'border-surface-border bg-surface-light hover:border-eco-500/40'
                     }`}
                   >
-                    <div className="space-y-1.5">
-                      <div className="text-2xl">{cat.icon}</div>
+                    <div className="space-y-2">
+                      <div className="w-10 h-10 rounded-xl bg-surface-subtle border border-surface-border flex items-center justify-center transition-colors group-hover:border-eco-500/30">
+                        <CategoryIcon
+                          id={cat.id}
+                          className={isSelected ? 'text-eco-600' : 'text-charcoal-muted group-hover:text-eco-500'}
+                          size={20}
+                        />
+                      </div>
                       <h3 className="text-sm font-bold text-charcoal-black">
                         {isFr ? cat.labelFr : cat.labelEn}
                       </h3>

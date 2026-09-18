@@ -10,6 +10,8 @@ import { ProductType } from '@/lib/types/product';
 import { RecyclingTeaser } from '@/components/recycling/RecyclingTeaser';
 import { ArrowRight, Sparkles, Wand2, Truck, ShieldCheck, Heart } from 'lucide-react';
 
+import { CategoryIcon } from '@/components/ui/CategoryIcon';
+
 interface HomePageProps {
   params: { locale: Locale };
 }
@@ -29,13 +31,13 @@ function resolveSpecs(t: any): Record<string, string> {
 }
 
 const CATEGORIES_SHOWCASE = [
-  { id: 'KEYCHAINS', icon: '🔑', nameFr: 'Porte-clés', nameEn: 'Keychains', price: 'Dès 5 DT' },
-  { id: 'PHONE_STANDS', icon: '📱', nameFr: 'Supports tél.', nameEn: 'Phone stands', price: 'Dès 15 DT' },
-  { id: 'GAMING_ACCESSORIES', icon: '🎧', nameFr: 'Gaming setup', nameEn: 'Gaming accessories', price: 'Dès 20 DT' },
-  { id: 'DECORATION', icon: '🏠', nameFr: 'Décoration', nameEn: '3D Decor', price: 'Dès 20 DT' },
-  { id: 'GIFTS', icon: '🎁', nameFr: 'Cadeaux', nameEn: 'Custom gifts', price: 'Dès 25 DT' },
-  { id: 'PIGGY_BANKS', icon: '🪙', nameFr: 'Tirelires', nameEn: 'Piggy banks', price: 'Dès 18 DT' },
-  { id: 'UTILITY', icon: '🧰', nameFr: 'Utilitaires', nameEn: 'Utility items', price: 'Dès 6 DT' },
+  { id: 'KEYCHAINS', nameFr: 'Porte-clés', nameEn: 'Keychains', price: 'Dès 5 DT' },
+  { id: 'PHONE_STANDS', nameFr: 'Supports tél.', nameEn: 'Phone stands', price: 'Dès 15 DT' },
+  { id: 'GAMING_ACCESSORIES', nameFr: 'Gaming setup', nameEn: 'Gaming accessories', price: 'Dès 20 DT' },
+  { id: 'DECORATION', nameFr: 'Décoration', nameEn: '3D Decor', price: 'Dès 20 DT' },
+  { id: 'GIFTS', nameFr: 'Cadeaux', nameEn: 'Custom gifts', price: 'Dès 25 DT' },
+  { id: 'PIGGY_BANKS', nameFr: 'Tirelires', nameEn: 'Piggy banks', price: 'Dès 18 DT' },
+  { id: 'UTILITY', nameFr: 'Utilitaires', nameEn: 'Utility items', price: 'Dès 6 DT' },
 ];
 
 export default async function HomePage({ params }: HomePageProps) {
@@ -103,13 +105,15 @@ export default async function HomePage({ params }: HomePageProps) {
               <Link
                 key={cat.id}
                 href={`/${params.locale}/catalog`}
-                className="p-3 rounded-2xl bg-surface-subtle hover:bg-eco-50/60 border border-surface-border hover:border-eco-500/30 transition-all text-center space-y-1 group"
+                className="p-3 rounded-2xl bg-surface-subtle hover:bg-surface-light border border-surface-border hover:border-eco-500/40 transition-all text-center space-y-2 group shadow-2xs"
               >
-                <div className="text-2xl group-hover:scale-110 transition-transform">{cat.icon}</div>
-                <div className="text-xs font-bold text-charcoal-black group-hover:text-eco-700">
+                <div className="w-10 h-10 rounded-xl bg-white border border-surface-border flex items-center justify-center mx-auto transition-colors group-hover:border-eco-500/30">
+                  <CategoryIcon id={cat.id} size={20} />
+                </div>
+                <div className="text-xs font-bold text-charcoal-black group-hover:text-eco-600 transition-colors">
                   {isFr ? cat.nameFr : cat.nameEn}
                 </div>
-                <div className="text-[10px] font-semibold text-eco-600">{cat.price}</div>
+                <div className="text-[10px] font-semibold text-charcoal-muted group-hover:text-eco-600 transition-colors">{cat.price}</div>
               </Link>
             ))}
           </div>

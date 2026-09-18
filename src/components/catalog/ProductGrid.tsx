@@ -6,6 +6,7 @@ import { Locale } from '@/lib/i18n/config';
 import { ProductType } from '@/lib/types/product';
 import { ProductCard } from '@/components/catalog/ProductCard';
 import { useCurrency } from '@/lib/store/currency-context';
+import { CategoryIcon } from '@/components/ui/CategoryIcon';
 import {
   SlidersHorizontal,
   ArrowUpDown,
@@ -13,6 +14,7 @@ import {
   RotateCcw,
   Wand2,
   Sparkles,
+  PackageOpen,
 } from 'lucide-react';
 
 interface ProductGridProps {
@@ -22,14 +24,14 @@ interface ProductGridProps {
 }
 
 export const CATEGORIES_LIST = [
-  { id: 'all', labelFr: 'Tous les produits', labelEn: 'All Creations', icon: '✨' },
-  { id: 'KEYCHAINS', labelFr: 'Porte-clés personnalisés', labelEn: 'Custom Keychains', icon: '🔑' },
-  { id: 'PHONE_STANDS', labelFr: 'Supports téléphone', labelEn: 'Phone Stands', icon: '📱' },
-  { id: 'GAMING_ACCESSORIES', labelFr: 'Accessoires gaming', labelEn: 'Gaming Accessories', icon: '🎧' },
-  { id: 'DECORATION', labelFr: 'Décoration & Maison', labelEn: 'Home Decor', icon: '🏠' },
-  { id: 'GIFTS', labelFr: 'Cadeaux personnalisés', labelEn: 'Custom Gifts', icon: '🎁' },
-  { id: 'PIGGY_BANKS', labelFr: 'Tirelires 3D', labelEn: '3D Piggy Banks', icon: '🪙' },
-  { id: 'UTILITY', labelFr: 'Objets Utilitaires', labelEn: 'Utility & Tools', icon: '🧰' },
+  { id: 'all', labelFr: 'Tous les produits', labelEn: 'All Creations' },
+  { id: 'KEYCHAINS', labelFr: 'Porte-clés personnalisés', labelEn: 'Custom Keychains' },
+  { id: 'PHONE_STANDS', labelFr: 'Supports téléphone', labelEn: 'Phone Stands' },
+  { id: 'GAMING_ACCESSORIES', labelFr: 'Accessoires gaming', labelEn: 'Gaming Accessories' },
+  { id: 'DECORATION', labelFr: 'Décoration & Maison', labelEn: 'Home Decor' },
+  { id: 'GIFTS', labelFr: 'Cadeaux personnalisés', labelEn: 'Custom Gifts' },
+  { id: 'PIGGY_BANKS', labelFr: 'Tirelires 3D', labelEn: '3D Piggy Banks' },
+  { id: 'UTILITY', labelFr: 'Objets Utilitaires', labelEn: 'Utility & Tools' },
 ];
 
 export function ProductGrid({ initialProducts, locale, dictionary }: ProductGridProps) {
@@ -93,13 +95,17 @@ export function ProductGrid({ initialProducts, locale, dictionary }: ProductGrid
               key={cat.id}
               type="button"
               onClick={() => setSelectedCategory(cat.id)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex-shrink-0 cursor-pointer ${
+              className={`group flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex-shrink-0 cursor-pointer ${
                 isSelected
                   ? 'bg-eco-500 text-white shadow-md shadow-eco-500/20 ring-2 ring-eco-500/30'
-                  : 'bg-surface-subtle hover:bg-surface-border text-charcoal-black border border-surface-border'
+                  : 'bg-surface-subtle hover:bg-surface-border text-charcoal-black border border-surface-border hover:border-eco-500/40'
               }`}
             >
-              <span>{cat.icon}</span>
+              <CategoryIcon
+                id={cat.id}
+                className={isSelected ? 'text-white' : 'text-charcoal-black group-hover:text-eco-500'}
+                size={16}
+              />
               <span>{isFr ? cat.labelFr : cat.labelEn}</span>
             </button>
           );
@@ -135,7 +141,7 @@ export function ProductGrid({ initialProducts, locale, dictionary }: ProductGrid
                 currency === 'TND' ? 'bg-eco-500 text-white shadow-xs' : 'text-charcoal-muted hover:text-charcoal'
               }`}
             >
-              🇹🇳 DT
+              DT (TND)
             </button>
             <button
               type="button"
@@ -144,7 +150,7 @@ export function ProductGrid({ initialProducts, locale, dictionary }: ProductGrid
                 currency === 'EUR' ? 'bg-eco-500 text-white shadow-xs' : 'text-charcoal-muted hover:text-charcoal'
               }`}
             >
-              € EUR
+              EUR (€)
             </button>
           </div>
 
@@ -182,7 +188,7 @@ export function ProductGrid({ initialProducts, locale, dictionary }: ProductGrid
         <aside className="lg:col-span-3 rounded-2xl border border-surface-border bg-surface-subtle/70 p-5 space-y-6">
           <div className="flex items-center justify-between pb-3 border-b border-surface-border">
             <div className="flex items-center gap-2 font-bold text-sm text-charcoal">
-              <SlidersHorizontal className="w-4 h-4 text-eco-500" />
+              <SlidersHorizontal className="w-4 h-4 text-charcoal-muted" />
               <span>{isFr ? 'Filtres & Prix' : 'Filters & Price'}</span>
             </div>
             <span className="text-xs font-semibold text-eco-500 bg-eco-50 px-2 py-0.5 rounded-full">
@@ -196,23 +202,30 @@ export function ProductGrid({ initialProducts, locale, dictionary }: ProductGrid
               {isFr ? 'Catégories' : 'Categories'}
             </label>
             <div className="flex flex-col space-y-1">
-              {CATEGORIES_LIST.map((cat) => (
-                <button
-                  key={cat.id}
-                  type="button"
-                  onClick={() => setSelectedCategory(cat.id)}
-                  className={`text-left px-3 py-2 rounded-lg text-xs font-semibold transition-all flex items-center justify-between ${
-                    selectedCategory === cat.id
-                      ? 'bg-eco-500 text-white shadow-xs'
-                      : 'text-charcoal-muted hover:bg-white hover:text-charcoal'
-                  }`}
-                >
-                  <span className="flex items-center gap-2">
-                    <span>{cat.icon}</span>
-                    <span>{isFr ? cat.labelFr : cat.labelEn}</span>
-                  </span>
-                </button>
-              ))}
+              {CATEGORIES_LIST.map((cat) => {
+                const isSelected = selectedCategory === cat.id;
+                return (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => setSelectedCategory(cat.id)}
+                    className={`group text-left px-3 py-2 rounded-lg text-xs font-semibold transition-all flex items-center justify-between ${
+                      isSelected
+                        ? 'bg-eco-500 text-white shadow-xs'
+                        : 'text-charcoal-muted hover:bg-white hover:text-charcoal'
+                    }`}
+                  >
+                    <span className="flex items-center gap-2.5">
+                      <CategoryIcon
+                        id={cat.id}
+                        className={isSelected ? 'text-white' : 'text-charcoal-muted group-hover:text-eco-500'}
+                        size={15}
+                      />
+                      <span>{isFr ? cat.labelFr : cat.labelEn}</span>
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -264,7 +277,9 @@ export function ProductGrid({ initialProducts, locale, dictionary }: ProductGrid
         <div className="lg:col-span-9">
           {filteredProducts.length === 0 ? (
             <div className="text-center py-16 px-4 rounded-2xl bg-surface-subtle border border-surface-border space-y-4">
-              <div className="text-4xl">🎨</div>
+              <div className="w-12 h-12 rounded-2xl bg-surface-light border border-surface-border flex items-center justify-center mx-auto text-charcoal-muted">
+                <PackageOpen className="w-6 h-6 text-charcoal-muted" />
+              </div>
               <h3 className="text-base font-bold text-charcoal">
                 {isFr
                   ? 'Aucun article trouvé dans cette sélection'
