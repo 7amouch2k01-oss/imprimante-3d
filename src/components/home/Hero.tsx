@@ -120,8 +120,8 @@ export function Hero({ locale, dictionary }: HeroProps) {
               {/* Hardware visual */}
               <div className="relative my-4 aspect-4/3 rounded-2xl overflow-hidden bg-surface-subtle border border-surface-border">
                 <img
-                  src="https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=800&q=80"
-                  alt="Industrial 3D Printing in action"
+                  src="/images/hero-printer.jpg"
+                  alt="CBV Industrial 3D Printer in action"
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-charcoal-black/70 via-transparent to-transparent flex items-end p-4">
