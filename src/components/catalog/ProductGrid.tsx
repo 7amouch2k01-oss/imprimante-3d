@@ -1,11 +1,19 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
+import Link from 'next/link';
 import { Locale } from '@/lib/i18n/config';
 import { ProductType } from '@/lib/types/product';
 import { ProductCard } from '@/components/catalog/ProductCard';
 import { useCurrency } from '@/lib/store/currency-context';
-import { Filter, SlidersHorizontal, ArrowUpDown, Search, RotateCcw } from 'lucide-react';
+import {
+  SlidersHorizontal,
+  ArrowUpDown,
+  Search,
+  RotateCcw,
+  Wand2,
+  Sparkles,
+} from 'lucide-react';
 
 interface ProductGridProps {
   initialProducts: ProductType[];
@@ -13,93 +21,91 @@ interface ProductGridProps {
   dictionary: any;
 }
 
+export const CATEGORIES_LIST = [
+  { id: 'all', labelFr: 'Tous les produits', labelEn: 'All Creations', icon: '✨' },
+  { id: 'KEYCHAINS', labelFr: 'Porte-clés personnalisés', labelEn: 'Custom Keychains', icon: '🔑' },
+  { id: 'PHONE_STANDS', labelFr: 'Supports téléphone', labelEn: 'Phone Stands', icon: '📱' },
+  { id: 'GAMING_ACCESSORIES', labelFr: 'Accessoires gaming', labelEn: 'Gaming Accessories', icon: '🎧' },
+  { id: 'DECORATION', labelFr: 'Décoration & Maison', labelEn: 'Home Decor', icon: '🏠' },
+  { id: 'GIFTS', labelFr: 'Cadeaux personnalisés', labelEn: 'Custom Gifts', icon: '🎁' },
+  { id: 'PIGGY_BANKS', labelFr: 'Tirelires 3D', labelEn: '3D Piggy Banks', icon: '🪙' },
+  { id: 'UTILITY', labelFr: 'Objets Utilitaires', labelEn: 'Utility & Tools', icon: '🧰' },
+];
+
 export function ProductGrid({ initialProducts, locale, dictionary }: ProductGridProps) {
-  const { currency, setCurrency } = useCurrency();
+  const isFr = locale === 'fr';
+  const { currency, setCurrency, formatPrice } = useCurrency();
 
   // Filters state
-  const [selectedTech, setSelectedTech] = useState<string>('all');
-  const [selectedFilament, setSelectedFilament] = useState<string>('all');
-  const [selectedSpeedRange, setSelectedSpeedRange] = useState<string>('all');
-  const [maxPrice, setMaxPrice] = useState<number>(3000);
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [maxPrice, setMaxPrice] = useState<number>(100);
   const [sortBy, setSortBy] = useState<string>('featured');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
-  const filamentOptions = useMemo(() => {
-    return ['PLA', 'PETG', 'ABS', 'TPU', 'Carbon', 'Nylon', 'Resin'];
-  }, []);
-
   // Filtered & Sorted products
   const filteredProducts = useMemo(() => {
-    return initialProducts.filter((product) => {
-      // Search
-      const search = searchQuery.toLowerCase();
-      const name = (product.name || '').toLowerCase();
-      const desc = (product.description || '').toLowerCase();
-      if (search && !name.includes(search) && !desc.includes(search)) {
-        return false;
-      }
-
-      // Technology filter
-      const tech = (product.specs?.technology || product.specs?.Technology || 'FDM').toUpperCase();
-      if (selectedTech !== 'all') {
-        if (!tech.includes(selectedTech)) return false;
-      }
-
-      // Max price
-      if (product.price > maxPrice) {
-        return false;
-      }
-
-      // Filament type filter
-      if (selectedFilament !== 'all') {
-        const text = `${product.name} ${product.description} ${JSON.stringify(product.specs || {})}`.toLowerCase();
-        if (!text.includes(selectedFilament.toLowerCase())) {
+    return initialProducts
+      .filter((product) => {
+        // Search
+        const search = searchQuery.toLowerCase();
+        const name = (product.name || '').toLowerCase();
+        const desc = (product.description || '').toLowerCase();
+        if (search && !name.includes(search) && !desc.includes(search)) {
           return false;
         }
-      }
 
-      // Print speed filter
-      if (selectedSpeedRange !== 'all') {
-        const speedStr = String(product.specs?.speed || product.specs?.printSpeed || product.speed || '');
-        const speedNum = parseInt(speedStr.replace(/\D/g, '') || '0', 10);
-        if (selectedSpeedRange === 'high' && speedNum < 500) return false;
-        if (selectedSpeedRange === 'mid' && (speedNum < 250 || speedNum >= 500)) return false;
-        if (selectedSpeedRange === 'standard' && (speedNum >= 250 || speedNum === 0)) return false;
-      }
+        // Category filter
+        if (selectedCategory !== 'all') {
+          if (product.category !== selectedCategory) {
+            return false;
+          }
+        }
 
-      return true;
-    }).sort((a, b) => {
-      if (sortBy === 'price-low') return a.price - b.price;
-      if (sortBy === 'price-high') return b.price - a.price;
-      if (sortBy === 'speed') {
-        const speedA = parseInt(String(a.specs?.speed || a.speed || '0').replace(/\D/g, '') || '0', 10);
-        const speedB = parseInt(String(b.specs?.speed || b.speed || '0').replace(/\D/g, '') || '0', 10);
-        return speedB - speedA;
-      }
-      return (b.featured ? 1 : 0) - (a.featured ? 1 : 0);
-    });
-  }, [
-    initialProducts,
-    searchQuery,
-    selectedTech,
-    selectedFilament,
-    selectedSpeedRange,
-    maxPrice,
-    sortBy,
-    locale,
-  ]);
+        // Max price (in DT)
+        if (product.price > maxPrice) {
+          return false;
+        }
+
+        return true;
+      })
+      .sort((a, b) => {
+        if (sortBy === 'price-low') return a.price - b.price;
+        if (sortBy === 'price-high') return b.price - a.price;
+        return (b.featured ? 1 : 0) - (a.featured ? 1 : 0);
+      });
+  }, [initialProducts, searchQuery, selectedCategory, maxPrice, sortBy]);
 
   const resetFilters = () => {
-    setSelectedTech('all');
-    setSelectedFilament('all');
-    setSelectedSpeedRange('all');
-    setMaxPrice(3000);
+    setSelectedCategory('all');
+    setMaxPrice(100);
     setSortBy('featured');
     setSearchQuery('');
   };
 
   return (
     <div className="space-y-8">
+      {/* Category Pills Slider */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+        {CATEGORIES_LIST.map((cat) => {
+          const isSelected = selectedCategory === cat.id;
+          return (
+            <button
+              key={cat.id}
+              type="button"
+              onClick={() => setSelectedCategory(cat.id)}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex-shrink-0 cursor-pointer ${
+                isSelected
+                  ? 'bg-eco-500 text-white shadow-md shadow-eco-500/20 ring-2 ring-eco-500/30'
+                  : 'bg-surface-subtle hover:bg-surface-border text-charcoal-black border border-surface-border'
+              }`}
+            >
+              <span>{cat.icon}</span>
+              <span>{isFr ? cat.labelFr : cat.labelEn}</span>
+            </button>
+          );
+        })}
+      </div>
+
       {/* Search & Top Action Bar */}
       <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 p-4 rounded-2xl bg-surface-subtle border border-surface-border">
         {/* Search Input */}
@@ -109,18 +115,28 @@ export function ProductGrid({ initialProducts, locale, dictionary }: ProductGrid
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={dictionary.nav.searchPlaceholder || 'Search 3D printers, filaments...'}
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-surface-border bg-white text-sm text-charcoal placeholder-charcoal-subtle focus:border-eco-500 focus:ring-1 focus:ring-eco-500 outline-none transition-all"
+            placeholder={
+              isFr
+                ? 'Rechercher porte-clé, support téléphone, vase...'
+                : 'Search keychains, phone stand, decor...'
+            }
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-surface-border bg-white text-sm text-charcoal placeholder-charcoal-subtle focus:border-eco-500 focus:ring-1 focus:ring-eco-500 outline-none transition-all font-medium"
           />
         </div>
 
         {/* Currency & Sort Controls */}
         <div className="flex flex-wrap items-center gap-3">
-          {/* Dynamic Currency Toggle */}
+          {/* Currency Toggle */}
           <div className="flex items-center rounded-xl border border-surface-border bg-white p-1 text-xs font-bold text-charcoal shadow-xs">
-            <span className="px-2 text-[11px] text-charcoal-subtle font-semibold">
-              {dictionary.catalog.currency || 'Currency'}:
-            </span>
+            <button
+              type="button"
+              onClick={() => setCurrency('TND')}
+              className={`px-2.5 py-1 rounded-lg transition-all ${
+                currency === 'TND' ? 'bg-eco-500 text-white shadow-xs' : 'text-charcoal-muted hover:text-charcoal'
+              }`}
+            >
+              🇹🇳 DT
+            </button>
             <button
               type="button"
               onClick={() => setCurrency('EUR')}
@@ -129,15 +145,6 @@ export function ProductGrid({ initialProducts, locale, dictionary }: ProductGrid
               }`}
             >
               € EUR
-            </button>
-            <button
-              type="button"
-              onClick={() => setCurrency('USD')}
-              className={`px-2.5 py-1 rounded-lg transition-all ${
-                currency === 'USD' ? 'bg-eco-500 text-white shadow-xs' : 'text-charcoal-muted hover:text-charcoal'
-              }`}
-            >
-              $ USD
             </button>
           </div>
 
@@ -150,10 +157,9 @@ export function ProductGrid({ initialProducts, locale, dictionary }: ProductGrid
                 className="appearance-none pl-3 pr-8 py-2.5 rounded-xl border border-surface-border bg-white text-xs font-semibold text-charcoal focus:border-eco-500 outline-none transition-all"
                 aria-label="Sort by"
               >
-                <option value="featured">{dictionary.catalog.sortFeatured}</option>
-                <option value="price-low">{dictionary.catalog.sortPriceLow}</option>
-                <option value="price-high">{dictionary.catalog.sortPriceHigh}</option>
-                <option value="speed">{locale === 'fr' ? 'Vitesse max' : 'Top Print Speed'}</option>
+                <option value="featured">{isFr ? 'Recommandés' : 'Featured'}</option>
+                <option value="price-low">{isFr ? 'Prix : Croissant' : 'Price: Low to High'}</option>
+                <option value="price-high">{isFr ? 'Prix : Décroissant' : 'Price: High to Low'}</option>
               </select>
               <ArrowUpDown className="w-3.5 h-3.5 text-charcoal-subtle absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             </div>
@@ -162,7 +168,7 @@ export function ProductGrid({ initialProducts, locale, dictionary }: ProductGrid
               type="button"
               onClick={resetFilters}
               title="Reset Filters"
-              className="p-2.5 rounded-xl border border-surface-border bg-white hover:bg-surface-subtle text-charcoal-muted hover:text-charcoal transition-colors"
+              className="p-2.5 rounded-xl border border-surface-border bg-white hover:bg-surface-subtle text-charcoal-muted hover:text-charcoal transition-colors cursor-pointer"
             >
               <RotateCcw className="w-4 h-4" />
             </button>
@@ -177,133 +183,114 @@ export function ProductGrid({ initialProducts, locale, dictionary }: ProductGrid
           <div className="flex items-center justify-between pb-3 border-b border-surface-border">
             <div className="flex items-center gap-2 font-bold text-sm text-charcoal">
               <SlidersHorizontal className="w-4 h-4 text-eco-500" />
-              <span>{dictionary.catalog.filters}</span>
+              <span>{isFr ? 'Filtres & Prix' : 'Filters & Price'}</span>
             </div>
             <span className="text-xs font-semibold text-eco-500 bg-eco-50 px-2 py-0.5 rounded-full">
-              {filteredProducts.length} items
+              {filteredProducts.length} articles
             </span>
           </div>
 
-          {/* Technology filter */}
+          {/* Categories Filter in sidebar */}
           <div className="space-y-2">
             <label className="text-xs font-bold uppercase tracking-wider text-charcoal block">
-              {dictionary.catalog.technology}
+              {isFr ? 'Catégories' : 'Categories'}
             </label>
             <div className="flex flex-col space-y-1">
-              {[
-                { id: 'all', label: dictionary.catalog.allTechnologies },
-                { id: 'FDM', label: 'FDM / FFF (Filament)' },
-                { id: 'SLA', label: 'SLA / MSLA (Resin)' },
-                { id: 'SLS', label: 'SLS (Powder Sintering)' },
-              ].map((tech) => (
+              {CATEGORIES_LIST.map((cat) => (
                 <button
-                  key={tech.id}
+                  key={cat.id}
                   type="button"
-                  onClick={() => setSelectedTech(tech.id)}
-                  className={`text-left px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
-                    selectedTech === tech.id
+                  onClick={() => setSelectedCategory(cat.id)}
+                  className={`text-left px-3 py-2 rounded-lg text-xs font-semibold transition-all flex items-center justify-between ${
+                    selectedCategory === cat.id
                       ? 'bg-eco-500 text-white shadow-xs'
                       : 'text-charcoal-muted hover:bg-white hover:text-charcoal'
                   }`}
                 >
-                  {tech.label}
+                  <span className="flex items-center gap-2">
+                    <span>{cat.icon}</span>
+                    <span>{isFr ? cat.labelFr : cat.labelEn}</span>
+                  </span>
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Filament Type Filter */}
-          <div className="space-y-2 pt-2 border-t border-surface-border">
-            <label className="text-xs font-bold uppercase tracking-wider text-charcoal block">
-              {dictionary.catalog.filamentType || 'Filament Type'}
-            </label>
-            <select
-              value={selectedFilament}
-              onChange={(e) => setSelectedFilament(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl border border-surface-border bg-white text-xs font-medium text-charcoal focus:border-eco-500 outline-none"
-            >
-              <option value="all">{dictionary.catalog.allFilaments || 'All Filaments'}</option>
-              {filamentOptions.map((f) => (
-                <option key={f} value={f}>
-                  {f}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Print Speed Filter */}
-          <div className="space-y-2 pt-2 border-t border-surface-border">
-            <label className="text-xs font-bold uppercase tracking-wider text-charcoal block">
-              {dictionary.catalog.speed || 'Print Speed'}
-            </label>
-            <div className="grid grid-cols-1 gap-1.5">
-              {[
-                { id: 'all', label: dictionary.catalog.allSpeeds || 'All Speeds' },
-                { id: 'high', label: 'High Speed (> 500 mm/s)' },
-                { id: 'mid', label: 'Accelerated (250 - 500 mm/s)' },
-                { id: 'standard', label: 'Precision Standard (< 250 mm/s)' },
-              ].map((spd) => (
-                <button
-                  key={spd.id}
-                  type="button"
-                  onClick={() => setSelectedSpeedRange(spd.id)}
-                  className={`text-left px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                    selectedSpeedRange === spd.id
-                      ? 'bg-eco-50 text-eco-500 font-bold border border-eco-200'
-                      : 'text-charcoal-muted hover:bg-white hover:text-charcoal'
-                  }`}
-                >
-                  {spd.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Max Price Range Slider */}
+          {/* Price Range Slider (TND / DT) */}
           <div className="space-y-3 pt-2 border-t border-surface-border">
             <div className="flex items-center justify-between text-xs">
               <label className="font-bold uppercase tracking-wider text-charcoal">
-                {dictionary.catalog.priceRange}
+                {isFr ? 'Prix Maximum' : 'Max Price'}
               </label>
-              <span className="font-bold text-eco-500">Up to €{maxPrice}</span>
+              <span className="font-bold text-eco-500">{formatPrice(maxPrice)}</span>
             </div>
             <input
               type="range"
-              min={200}
-              max={3000}
-              step={50}
+              min={5}
+              max={100}
+              step={1}
               value={maxPrice}
               onChange={(e) => setMaxPrice(Number(e.target.value))}
               className="w-full accent-eco-500 cursor-pointer"
             />
             <div className="flex justify-between text-[10px] text-charcoal-subtle font-medium">
-              <span>€200</span>
-              <span>€1,500</span>
-              <span>€3,000+</span>
+              <span>5 DT</span>
+              <span>50 DT</span>
+              <span>100 DT</span>
             </div>
+          </div>
+
+          {/* Custom Order Callout in Sidebar */}
+          <div className="p-4 rounded-xl bg-gradient-to-br from-eco-50 to-eco-100/50 border border-eco-200 text-left space-y-2.5">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-eco-700">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>{isFr ? 'Besoin d’un modèle unique ?' : 'Need a custom model?'}</span>
+            </div>
+            <p className="text-[11px] text-charcoal-muted leading-relaxed">
+              {isFr
+                ? 'Envoyez-nous votre prénom, logo d’entreprise ou modèle 3D pour une fabrication sur-mesure.'
+                : 'Send us your custom text, logo or 3D design for on-demand fabrication.'}
+            </p>
+            <Link
+              href={`/${locale}/custom-order`}
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-eco-600 hover:text-eco-700 pt-1"
+            >
+              <span>{isFr ? 'Commander Sur-Mesure →' : 'Custom Request →'}</span>
+            </Link>
           </div>
         </aside>
 
         {/* Products Grid Output */}
         <div className="lg:col-span-9">
           {filteredProducts.length === 0 ? (
-            <div className="text-center py-16 px-4 rounded-2xl bg-surface-subtle border border-surface-border">
-              <Filter className="w-12 h-12 text-charcoal-subtle mx-auto mb-3 stroke-1" />
-              <h3 className="text-base font-bold text-charcoal mb-1">
-                {dictionary.catalog.noProducts}
+            <div className="text-center py-16 px-4 rounded-2xl bg-surface-subtle border border-surface-border space-y-4">
+              <div className="text-4xl">🎨</div>
+              <h3 className="text-base font-bold text-charcoal">
+                {isFr
+                  ? 'Aucun article trouvé dans cette sélection'
+                  : 'No 3D items found with current filters'}
               </h3>
-              <p className="text-xs text-charcoal-muted mb-4 max-w-sm mx-auto">
-                {locale === 'fr'
-                  ? 'Essayez de réinitialiser vos filtres ou de modifier votre terme de recherche.'
-                  : 'Try resetting your filter parameters or adjusting your search term.'}
+              <p className="text-xs text-charcoal-muted max-w-sm mx-auto">
+                {isFr
+                  ? 'Vous cherchez un objet spécifique ? Demandez-le directement à notre équipe pour qu’on l’imprime pour vous !'
+                  : 'Looking for a specific item? Request it directly from our team to print it for you!'}
               </p>
-              <button
-                type="button"
-                onClick={resetFilters}
-                className="px-4 py-2 rounded-xl bg-eco-500 text-white text-xs font-bold hover:bg-eco-600 transition-colors shadow-xs"
-              >
-                Reset All Filters
-              </button>
+              <div className="flex flex-wrap justify-center gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={resetFilters}
+                  className="px-4 py-2 rounded-xl bg-surface-light border border-surface-border text-charcoal text-xs font-bold hover:bg-surface-subtle"
+                >
+                  {isFr ? 'Réinitialiser' : 'Reset Filters'}
+                </button>
+                <Link
+                  href={`/${locale}/custom-order`}
+                  className="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-eco-500 text-white text-xs font-bold hover:bg-eco-600 shadow-xs"
+                >
+                  <Wand2 className="w-3.5 h-3.5" />
+                  <span>{isFr ? 'Commander Sur-Mesure' : 'Order Custom'}</span>
+                </Link>
+              </div>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">

@@ -2,32 +2,32 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
-export type Currency = 'USD' | 'EUR';
+export type Currency = 'TND' | 'EUR';
 
 interface CurrencyContextType {
   currency: Currency;
   setCurrency: (currency: Currency) => void;
-  formatPrice: (amountInEur: number) => string;
-  exchangeRate: number; // 1 EUR in USD
+  formatPrice: (amountInTnd: number) => string;
+  exchangeRate: number; // 1 TND in EUR (~0.30 EUR)
 }
 
 const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined);
 
-// Static conversion rate for demonstration (1 EUR = 1.08 USD)
-const EUR_TO_USD_RATE = 1.08;
+// Static conversion rate for display: 1 TND ≈ 0.30 EUR
+const TND_TO_EUR_RATE = 0.30;
 
 export function CurrencyProvider({ children }: { children: React.ReactNode }) {
-  const [currency, setCurrencyState] = useState<Currency>('EUR');
+  const [currency, setCurrencyState] = useState<Currency>('TND');
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     try {
       const stored = localStorage.getItem('cbv_currency') as Currency;
-      if (stored === 'USD' || stored === 'EUR') {
+      if (stored === 'TND' || stored === 'EUR') {
         setCurrencyState(stored);
       }
     } catch (e) {
-      // Ignore localstorage errors in restricted context
+      // Ignore localstorage errors
     }
     setMounted(true);
   }, []);
@@ -39,12 +39,13 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
     } catch (e) {}
   };
 
-  const formatPrice = (amountInEur: number): string => {
-    if (currency === 'USD') {
-      const usd = amountInEur * EUR_TO_USD_RATE;
-      return `$${usd.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  const formatPrice = (amountInTnd: number): string => {
+    if (currency === 'EUR') {
+      const eur = amountInTnd * TND_TO_EUR_RATE;
+      return `${eur.toFixed(2)} €`;
     }
-    return `€${amountInEur.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    // Tunisian Dinar formatting
+    return `${amountInTnd % 1 === 0 ? amountInTnd : amountInTnd.toFixed(1)} DT`;
   };
 
   return (
@@ -53,7 +54,7 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
         currency,
         setCurrency,
         formatPrice,
-        exchangeRate: EUR_TO_USD_RATE,
+        exchangeRate: TND_TO_EUR_RATE,
       }}
     >
       {children}

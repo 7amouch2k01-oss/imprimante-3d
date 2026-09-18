@@ -8,7 +8,7 @@ import { Hero } from '@/components/home/Hero';
 import { ProductCard } from '@/components/catalog/ProductCard';
 import { ProductType } from '@/lib/types/product';
 import { RecyclingTeaser } from '@/components/recycling/RecyclingTeaser';
-import { ArrowRight, Sparkles, Leaf, Shield, Cpu } from 'lucide-react';
+import { ArrowRight, Sparkles, Wand2, Truck, ShieldCheck, Heart } from 'lucide-react';
 
 interface HomePageProps {
   params: { locale: Locale };
@@ -17,7 +17,7 @@ interface HomePageProps {
 function resolveTranslation(product: any, locale: string) {
   return (
     product.translations.find((t: any) => t.languageCode === locale) ||
-    product.translations.find((t: any) => t.languageCode === 'en') ||
+    product.translations.find((t: any) => t.languageCode === 'fr') ||
     product.translations[0]
   );
 }
@@ -28,7 +28,18 @@ function resolveSpecs(t: any): Record<string, string> {
   return Object.fromEntries(Object.entries(t.specs as Record<string, string>));
 }
 
+const CATEGORIES_SHOWCASE = [
+  { id: 'KEYCHAINS', icon: '🔑', nameFr: 'Porte-clés', nameEn: 'Keychains', price: 'Dès 5 DT' },
+  { id: 'PHONE_STANDS', icon: '📱', nameFr: 'Supports tél.', nameEn: 'Phone stands', price: 'Dès 15 DT' },
+  { id: 'GAMING_ACCESSORIES', icon: '🎧', nameFr: 'Gaming setup', nameEn: 'Gaming accessories', price: 'Dès 20 DT' },
+  { id: 'DECORATION', icon: '🏠', nameFr: 'Décoration', nameEn: '3D Decor', price: 'Dès 20 DT' },
+  { id: 'GIFTS', icon: '🎁', nameFr: 'Cadeaux', nameEn: 'Custom gifts', price: 'Dès 25 DT' },
+  { id: 'PIGGY_BANKS', icon: '🪙', nameFr: 'Tirelires', nameEn: 'Piggy banks', price: 'Dès 18 DT' },
+  { id: 'UTILITY', icon: '🧰', nameFr: 'Utilitaires', nameEn: 'Utility items', price: 'Dès 6 DT' },
+];
+
 export default async function HomePage({ params }: HomePageProps) {
+  const isFr = params.locale === 'fr';
   const dictionary = await getDictionary(params.locale);
 
   let featuredProducts: ProductType[] = [];
@@ -37,11 +48,11 @@ export default async function HomePage({ params }: HomePageProps) {
 
     let rawProducts = await Product.find({ featured: true })
       .sort({ createdAt: -1 })
-      .limit(3)
+      .limit(6)
       .lean();
 
     if (rawProducts.length === 0) {
-      rawProducts = await Product.find({}).sort({ createdAt: -1 }).limit(3).lean();
+      rawProducts = await Product.find({}).sort({ createdAt: -1 }).limit(6).lean();
     }
 
     featuredProducts = rawProducts.map((p) => {
@@ -59,10 +70,10 @@ export default async function HomePage({ params }: HomePageProps) {
         name: t?.name || p.slug,
         description: t?.description || '',
         specs,
-        technology: specs.technology || (p.category === 'PRINTER' ? 'FDM' : 'Hardware'),
-        speed: specs.speed || specs['Print Speed'],
-        buildVolume: specs.buildVolume || specs['Build Volume'],
-        brand: specs.brand || 'CBV Industrial',
+        technology: specs.technology || 'Impression 3D FDM',
+        speed: specs.speed,
+        buildVolume: specs.buildVolume,
+        brand: 'CBV 3D Tunisie',
       };
     });
   } catch (e) {
@@ -74,21 +85,52 @@ export default async function HomePage({ params }: HomePageProps) {
       {/* 1. Hero Section */}
       <Hero locale={params.locale} dictionary={dictionary} />
 
-      {/* 2. Featured 3D Printers Section */}
+      {/* 2. Quick Categories Bar */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8">
+        <div className="p-4 sm:p-6 rounded-3xl bg-surface-light border border-surface-border shadow-sm">
+          <div className="text-xs font-bold uppercase tracking-wider text-charcoal-muted mb-4 flex items-center justify-between">
+            <span>{isFr ? 'Nos Catégories Populaires' : 'Popular Categories'}</span>
+            <Link
+              href={`/${params.locale}/custom-order`}
+              className="text-eco-600 hover:text-eco-700 flex items-center gap-1 font-bold normal-case text-xs"
+            >
+              <Wand2 className="w-3.5 h-3.5" />
+              <span>{isFr ? 'Demande Sur-Mesure →' : 'Request Custom Item →'}</span>
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
+            {CATEGORIES_SHOWCASE.map((cat) => (
+              <Link
+                key={cat.id}
+                href={`/${params.locale}/catalog`}
+                className="p-3 rounded-2xl bg-surface-subtle hover:bg-eco-50/60 border border-surface-border hover:border-eco-500/30 transition-all text-center space-y-1 group"
+              >
+                <div className="text-2xl group-hover:scale-110 transition-transform">{cat.icon}</div>
+                <div className="text-xs font-bold text-charcoal-black group-hover:text-eco-700">
+                  {isFr ? cat.nameFr : cat.nameEn}
+                </div>
+                <div className="text-[10px] font-semibold text-eco-600">{cat.price}</div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 3. Featured 3D Creations Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4 mb-8">
           <div className="space-y-2">
             <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-eco-500 bg-eco-50 px-2.5 py-1 rounded-md">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Additive Precision</span>
+              <span>{isFr ? 'Bestsellers en Tunisie' : 'Tunisia Best Picks'}</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-black text-charcoal-black tracking-tight">
-              {params.locale === 'fr' ? 'Imprimantes 3D Recommandées' : 'Featured 3D Printers'}
+              {isFr ? 'Produits 3D Recommandés' : 'Featured 3D Creations'}
             </h2>
             <p className="text-sm text-charcoal-muted max-w-xl">
-              {params.locale === 'fr'
-                ? 'Sélection de machines étalonnées en laboratoire, prêtes pour vos polymères standards ou recyclés.'
-                : 'Lab-calibrated desktop & industrial systems ready for high-speed prototyping and circular materials.'}
+              {isFr
+                ? 'Sélection d’objets imprimés avec passion dans notre atelier : finition propre, filaments solides et prix en Dinars Tunisiens.'
+                : 'Handpicked custom creations: clean finish, durable materials and accessible prices in TND.'}
             </p>
           </div>
 
@@ -96,7 +138,7 @@ export default async function HomePage({ params }: HomePageProps) {
             href={`/${params.locale}/catalog`}
             className="inline-flex items-center gap-2 text-sm font-bold text-eco-500 hover:text-eco-600 transition-colors group"
           >
-            <span>{dictionary.catalog.title || 'View Full Catalog'}</span>
+            <span>{isFr ? 'Voir Tout le Catalogue (DT)' : 'View Full Catalog'}</span>
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>
@@ -114,54 +156,54 @@ export default async function HomePage({ params }: HomePageProps) {
         </div>
       </section>
 
-      {/* 3. Value Proposition Feature Strip */}
+      {/* 4. Value Proposition Feature Strip */}
       <section className="bg-surface-subtle border-y border-surface-border py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="flex items-start gap-4 p-6 rounded-2xl bg-surface-light border border-surface-border">
               <div className="w-12 h-12 rounded-xl bg-eco-50 border border-eco-200 flex items-center justify-center text-eco-500 flex-shrink-0">
-                <Leaf className="w-6 h-6" />
+                <Wand2 className="w-6 h-6" />
               </div>
               <div className="space-y-1">
                 <h3 className="font-bold text-sm text-charcoal-black">
-                  {params.locale === 'fr' ? 'Boucle Circulaire Fermée' : 'Closed-Loop Circularity'}
+                  {isFr ? 'Personnalisation 100% Libre' : '100% Customization'}
                 </h3>
                 <p className="text-xs text-charcoal-muted leading-relaxed">
-                  {params.locale === 'fr'
-                    ? 'Chaque gramme de plastique déchet est réutilisable en filament de qualité industrielle.'
-                    : 'Transform failed prints and spent spools back into laser-gauged high-performance spools.'}
+                  {isFr
+                    ? 'Ajoutez votre nom, vos initiales, votre date fétiche ou le logo de votre voiture sur n’importe quel modèle.'
+                    : 'Personalize with names, wedding dates, or car logos in high-resolution 3D.'}
                 </p>
               </div>
             </div>
 
             <div className="flex items-start gap-4 p-6 rounded-2xl bg-surface-light border border-surface-border">
               <div className="w-12 h-12 rounded-xl bg-eco-50 border border-eco-200 flex items-center justify-center text-eco-500 flex-shrink-0">
-                <Cpu className="w-6 h-6" />
+                <Truck className="w-6 h-6" />
               </div>
               <div className="space-y-1">
                 <h3 className="font-bold text-sm text-charcoal-black">
-                  {params.locale === 'fr' ? 'Précision Micrométrique' : 'Micron Precision'}
+                  {isFr ? 'Livraison Rapide Toute la Tunisie' : 'Fast Tunisia Delivery'}
                 </h3>
                 <p className="text-xs text-charcoal-muted leading-relaxed">
-                  {params.locale === 'fr'
-                    ? "Tolérance de positionnement d'axe Z de 0.02 mm et cinématique CoreXY rapide."
-                    : 'Engineered with rigid CoreXY motion, auto-resonance calibration, and 0.02mm layer accuracy.'}
+                  {isFr
+                    ? 'Fabrication sous 24 à 48h et livraison sécurisée à domicile sur les 24 gouvernorats.'
+                    : '24-48h fabrication turnaround and reliable delivery to all 24 governorates.'}
                 </p>
               </div>
             </div>
 
             <div className="flex items-start gap-4 p-6 rounded-2xl bg-surface-light border border-surface-border">
               <div className="w-12 h-12 rounded-xl bg-eco-50 border border-eco-200 flex items-center justify-center text-eco-500 flex-shrink-0">
-                <Shield className="w-6 h-6" />
+                <Heart className="w-6 h-6" />
               </div>
               <div className="space-y-1">
                 <h3 className="font-bold text-sm text-charcoal-black">
-                  {params.locale === 'fr' ? 'Garantie & Support Direct' : 'Direct Manufacturer Warranty'}
+                  {isFr ? 'Prix Accessible dès 5 DT' : 'Accessible Pricing from 5 DT'}
                 </h3>
                 <p className="text-xs text-charcoal-muted leading-relaxed">
-                  {params.locale === 'fr'
-                    ? 'Support technique 24/7 par nos ingénieurs additifs certifiés.'
-                    : 'Full 2-year warranty with instant parts dispatch and specialized maker assistance.'}
+                  {isFr
+                    ? 'Des tarifs adaptés au marché tunisien avec une qualité d’impression soignée et vérifiée.'
+                    : 'Direct maker prices in Tunisian Dinars with strict print quality checks.'}
                 </p>
               </div>
             </div>
@@ -169,7 +211,37 @@ export default async function HomePage({ params }: HomePageProps) {
         </div>
       </section>
 
-      {/* 4. Recycling Initiative Teaser Card */}
+      {/* 5. Custom Order Callout Banner */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="relative overflow-hidden rounded-3xl bg-charcoal-black text-white p-8 sm:p-12">
+          <div className="relative z-10 max-w-2xl space-y-4">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-eco-500/20 text-eco-400 border border-eco-500/30 text-xs font-bold uppercase">
+              <Wand2 className="w-3.5 h-3.5" />
+              <span>{isFr ? 'Service Sur-Mesure' : 'Custom Request'}</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-black tracking-tight">
+              {isFr
+                ? 'Vous avez un fichier STL ou une idée précise ?'
+                : 'Have an STL file or custom idea?'}
+            </h2>
+            <p className="text-sm text-white/70 leading-relaxed">
+              {isFr
+                ? 'Contactez notre atelier directement pour un devis instantané et une impression 3D sur-mesure aux couleurs de votre choix.'
+                : 'Get in touch with our team for an instant quote and personalized 3D print in the filament color of your choice.'}
+            </p>
+            <div className="pt-2 flex flex-wrap gap-4">
+              <Link
+                href={`/${params.locale}/custom-order`}
+                className="px-6 py-3 rounded-xl bg-eco-500 hover:bg-eco-600 text-white font-bold text-sm shadow-md transition-all"
+              >
+                {isFr ? 'Commander Mon Objet Personnalisé' : 'Request My Custom Creation'}
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 6. Recycling Initiative Teaser Card */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <RecyclingTeaser locale={params.locale} dictionary={dictionary} />
       </div>

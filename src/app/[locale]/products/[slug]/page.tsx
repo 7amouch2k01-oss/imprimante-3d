@@ -67,10 +67,10 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
     name: t?.name || product.slug,
     description: t?.description || '',
     specs,
-    technology: specs.technology || (product.category === 'PRINTER' ? 'FDM' : 'Hardware'),
-    speed: specs.speed || specs['Print Speed'],
-    buildVolume: specs.buildVolume || specs['Build Volume'],
-    brand: specs.brand || 'CBV Industrial',
+    technology: specs.technology || 'Impression 3D FDM',
+    speed: specs.speed,
+    buildVolume: specs.buildVolume,
+    brand: 'CBV 3D Tunisie',
   };
 
   return (

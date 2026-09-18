@@ -120,16 +120,16 @@ export function Hero({ locale, dictionary }: HeroProps) {
               {/* Hardware visual */}
               <div className="relative my-4 aspect-4/3 rounded-2xl overflow-hidden bg-surface-subtle border border-surface-border">
                 <img
-                  src="https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=800&q=80"
-                  alt="Industrial 3D Printing in action"
+                  src="/images/cbv-showcase.jpg"
+                  alt="CBV-3D PRINTING Workshop Showcase"
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-charcoal-black/70 via-transparent to-transparent flex items-end p-4">
                   <div className="text-white">
                     <p className="text-xs font-semibold text-eco-300 uppercase tracking-widest">
-                      Multi-Material Core
+                      Eco Additive Hub
                     </p>
-                    <p className="text-lg font-bold">CBV Industrial X-Core</p>
+                    <p className="text-lg font-bold">CBV-3D PRINTING Emblem</p>
                   </div>
                 </div>
               </div>
