@@ -35,6 +35,8 @@ COPY --from=builder /app/public ./public
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/scripts ./scripts
 
+RUN chmod +x ./scripts/start.sh
+
 EXPOSE 3000
 
-CMD ["sh", "-c", "node scripts/prepare-db.js && npx prisma db push --accept-data-loss && npx ts-node prisma/seed.ts && npm run start"]
+CMD ["sh", "./scripts/start.sh"]

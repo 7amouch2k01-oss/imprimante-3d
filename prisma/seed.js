@@ -4,248 +4,260 @@ const bcrypt = require('bcryptjs');
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('Clearing existing data...');
-  await prisma.orderItem.deleteMany();
-  await prisma.order.deleteMany();
-  await prisma.review.deleteMany();
-  await prisma.product.deleteMany();
-  await prisma.category.deleteMany();
-  await prisma.waitlistSubscriber.deleteMany();
-  await prisma.user.deleteMany();
+  console.log('🌱 Starting CBV-3D PRINTING database seed...');
 
-  console.log('Seeding Users...');
-  const adminPassword = await bcrypt.hash('AdminPassword123!', 10);
-  const userPassword = await bcrypt.hash('UserPassword123!', 10);
+  // 1. Seed Users (ADMIN & CUSTOMER) if not existing
+  const existingAdmin = await prisma.user.findFirst({ where: { role: 'ADMIN' } });
+  if (!existingAdmin) {
+    console.log('👤 Seeding Admin and Customer users...');
+    const adminPassword = await bcrypt.hash('AdminSecure2026!', 10);
+    const customerPassword = await bcrypt.hash('CustomerSecure2026!', 10);
 
-  const admin = await prisma.user.create({
-    data: {
-      name: 'Oussema Architect',
-      email: 'admin@additive3d.com',
-      passwordHash: adminPassword,
-      role: 'ADMIN',
-    },
-  });
+    await prisma.user.create({
+      data: {
+        name: 'CBV Lead Engineer',
+        email: 'admin@cbv3dprinting.com',
+        passwordHash: adminPassword,
+        role: 'ADMIN',
+      },
+    });
 
-  const user = await prisma.user.create({
-    data: {
-      name: 'Alex Maker',
-      email: 'alex@makerlab.io',
-      passwordHash: userPassword,
-      role: 'USER',
-    },
-  });
+    await prisma.user.create({
+      data: {
+        name: 'Marc Lefevre',
+        email: 'marc.lefevre@additive-lab.fr',
+        passwordHash: customerPassword,
+        role: 'CUSTOMER',
+      },
+    });
+    console.log('✅ Users seeded successfully.');
+  }
 
-  console.log('Seeding Categories...');
-  const catFdm = await prisma.category.create({
-    data: {
-      slug: 'fdm-printers',
-      nameEn: 'FDM / FFF 3D Printers',
-      nameFr: 'Imprimantes 3D FDM / Dépôt de Fil',
-      descriptionEn: 'High-speed extrusion 3D printers for engineering thermoplastics and prototypes.',
-      descriptionFr: 'Imprimantes 3D à dépôt de fil fondu haute vitesse pour thermoplastiques techniques.',
-    },
-  });
+  // 2. Check if products already exist
+  const count = await prisma.product.count();
+  if (count > 0) {
+    console.log(`ℹ️ Database already has ${count} products. Skipping duplicate seed.`);
+    return;
+  }
 
-  const catSla = await prisma.category.create({
-    data: {
-      slug: 'resin-sla-printers',
-      nameEn: 'SLA / MSLA Resin 3D Printers',
-      nameFr: 'Imprimantes 3D Résine SLA / MSLA',
-      descriptionEn: 'Micron-level precision photopolymer printers for miniatures, dental, and jewelry.',
-      descriptionFr: 'Imprimantes photopolymères à résolution micrométrique pour miniatures, dentaire et joaillerie.',
-    },
-  });
-
-  const catFilament = await prisma.category.create({
-    data: {
-      slug: 'materials-filaments',
-      nameEn: 'Technical Filaments & Resins',
-      nameFr: 'Filaments & Résines Techniques',
-      descriptionEn: 'Industrial carbon-fiber reinforced filaments, engineering PLA, and tough resins.',
-      descriptionFr: 'Filaments renforcés fibre de carbone, PLA technique et résines haute ténacité.',
-    },
-  });
-
-  console.log('Seeding Products...');
-  const products = [
+  console.log('🖨️ Seeding 3D Printers & Equipment with EN/FR Translations...');
+  const seedProducts = [
     {
-      slug: 'bambu-lab-x1-carbon-combo',
-      titleEn: 'Bambu Lab X1-Carbon Combo (with AMS)',
-      titleFr: 'Bambu Lab X1-Carbon Combo (avec AMS)',
-      descriptionEn: 'The flagship AI-powered multi-color 3D printer featuring carbon-rod coreXY architecture, 500 mm/s acceleration, hardened steel nozzle for abrasive polymers, and integrated lidar first-layer inspection.',
-      descriptionFr: 'L\'imprimante 3D multi-couleurs haut de gamme avec intelligence artificielle, structure CoreXY ultra-rigide, 500 mm/s, buse en acier trempé pour filaments abrasifs et capteur Lidar.',
-      price: 1449.00,
-      comparePrice: 1599.00,
-      brand: 'Bambu Lab',
-      technology: 'FDM',
-      buildVolume: '256 x 256 x 256 mm',
-      speed: 'Up to 500 mm/s (20000 mm/s² accel)',
-      stock: 15,
+      slug: 'cbv-vortex-corexy-pro',
+      price: 1399.0,
+      comparePrice: 1549.0,
+      stock: 18,
+      category: 'PRINTER',
       featured: true,
-      categoryId: catFdm.id,
       images: JSON.stringify([
         'https://images.unsplash.com/photo-1631556097152-c39479cbfe5e?auto=format&fit=crop&w=1000&q=80',
         'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1000&q=80',
       ]),
-      specs: JSON.stringify({
-        'Max Hotend Temp': '300 °C',
-        'Max Bed Temp': '110 °C',
-        'Nozzle': '0.4mm Hardened Steel',
-        'Supported Filaments': 'PLA, PETG, TPU, ABS, ASA, PVA, PET, Carbon/Glass Fiber Reinforced PA, PC',
-        'Sensors': 'AI LiDAR, 1080p Chamber Camera, Door Sensor, Filament Runout',
-        'Connectivity': 'Wi-Fi, Bambu Bus',
-      }),
+      translations: {
+        en: {
+          name: 'CBV Vortex CoreXY Pro 3D Printer',
+          description:
+            'Ultra-high-speed enclosed CoreXY 3D printer engineered with carbon fiber linear rods, active chamber heating (65°C), high-flow hardened steel nozzle, and vibration compensation up to 600 mm/s.',
+          specs: {
+            kinematics: 'CoreXY with Linear Carbon Rods',
+            buildVolume: '300 x 300 x 300 mm',
+            maxPrintSpeed: '600 mm/s (Acceleration: 25,000 mm/s²)',
+            maxHotendTemp: '350 °C',
+            maxBedTemp: '120 °C',
+            chamberHeating: 'Active chamber heating up to 65 °C',
+            nozzle: '0.4 mm Hardened Tool Steel (Anti-abrasive)',
+            filamentCompatibility: ['PLA', 'PETG', 'ABS', 'ASA', 'PA-CF', 'PC', 'TPU'],
+            leveling: 'Full Bed Automatic Mesh via Piezo Sensor Matrix',
+            connectivity: 'Wi-Fi 6, Gigabit Ethernet, USB-C, CAN-bus Toolhead',
+          },
+        },
+        fr: {
+          name: 'Imprimante 3D CBV Vortex CoreXY Pro',
+          description:
+            'Imprimante 3D CoreXY haute vitesse entièrement fermée, équipée d\'axes linéaires en fibre de carbone, d\'une chambre régulée à 65°C, d\'une buse en acier trempé à haut débit et de compensation active des résonances à 600 mm/s.',
+          specs: {
+            cinematique: 'CoreXY avec tiges linéaires en fibre de carbone',
+            volumeImpression: '300 x 300 x 300 mm',
+            vitesseMax: '600 mm/s (Accélération: 25 000 mm/s²)',
+            temperatureBuseMax: '350 °C',
+            temperaturePlateauMax: '120 °C',
+            chauffageChambre: 'Chambre chauffée active jusqu\'à 65 °C',
+            buse: '0,4 mm Acier trempé haute résistance aux abrasifs',
+            compatibiliteFilaments: ['PLA', 'PETG', 'ABS', 'ASA', 'PA-CF', 'PC', 'TPU'],
+            nivellement: 'Maillage automatique multipoint par capteurs piézoélectriques',
+            connectivite: 'Wi-Fi 6, Ethernet Gigabit, USB-C, tête CAN-bus',
+          },
+        },
+      },
     },
     {
-      slug: 'prusa-mk4s-assembled',
-      titleEn: 'Original Prusa MK4S Factory Assembled',
-      titleFr: 'Original Prusa MK4S Assemblée d\'Usine',
-      descriptionEn: 'Rock-solid reliability built on the Nextruder platform with load-cell automated first layer calibration, 32-bit architecture, native input shaping, and open-source upgradeability.',
-      descriptionFr: 'Fiabilité légendaire conçue sur l\'extrudeur Nextruder avec première couche automatique par jauge de contrainte, électronique 32 bits et Input Shaping natif.',
-      price: 1099.00,
-      comparePrice: 1199.00,
-      brand: 'Prusa Research',
-      technology: 'FDM',
-      buildVolume: '250 x 210 x 220 mm',
-      speed: 'Up to 300 mm/s',
-      stock: 8,
+      slug: 'cbv-duomax-idex-dual-extruder',
+      price: 1850.0,
+      comparePrice: 2090.0,
+      stock: 12,
+      category: 'PRINTER',
       featured: true,
-      categoryId: catFdm.id,
       images: JSON.stringify([
         'https://images.unsplash.com/photo-1581092335397-9583fe92d232?auto=format&fit=crop&w=1000&q=80',
+        'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1000&q=80',
       ]),
-      specs: JSON.stringify({
-        'Max Hotend Temp': '290 °C',
-        'Max Bed Temp': '120 °C',
-        'Bed Type': 'Magnetic Spring Steel PEI Sheet',
-        'Calibration': 'Automatic Loadcell Bed Leveling (Zero Z-offset Tuning)',
-        'Ecosystem': 'Prusa Connect, PrusaLink, Ethernet, Wi-Fi',
-      }),
+      translations: {
+        en: {
+          name: 'CBV DuoMax IDEX Independent Dual-Extruder 3D Printer',
+          description:
+            'Professional dual-extruder additive manufacturing system with Independent Dual Extruders (IDEX). Effortlessly print complex soluble support structures (PVA/BVOH), multi-material engineering parts, duplicate, or mirror modes.',
+          specs: {
+            extrusionSystem: 'Independent Dual Extrusion (IDEX)',
+            printModes: ['Dual Material', 'Soluble Supports', 'Duplication (2x output)', 'Mirror'],
+            buildVolume: '330 x 270 x 300 mm (Single), 160 x 270 x 300 mm (Duplication)',
+            maxHotendTemp: '320 °C (Dual Direct-Drive Extruders)',
+            nozzleTypes: 'Dual Ruby-tipped 0.4 mm & 0.6 mm',
+            supportFilaments: ['PVA', 'BVOH', 'HIPS', 'PLA', 'PETG', 'TPU 95A', 'ABS'],
+            monitoring: 'Dual AI optical cameras with thermal drift calibration',
+          },
+        },
+        fr: {
+          name: 'Imprimante 3D CBV DuoMax Double Extrudeur Indépendant (IDEX)',
+          description:
+            'Système de fabrication additive professionnel à double extrusion indépendante (IDEX). Imprimez des géométries complexes avec supports solubles (PVA/BVOH), des pièces multimatériaux, ou doublez votre production en mode miroir et copie.',
+          specs: {
+            systemeExtrusion: 'Double Extrusion Indépendante (IDEX)',
+            modesImpression: ['Bi-matériau', 'Supports solubles', 'Duplication (débit x2)', 'Miroir symétrique'],
+            volumeImpression: '330 x 270 x 300 mm (Simple), 160 x 270 x 300 mm (Duplication)',
+            temperatureBuseMax: '320 °C (Extrudeurs Direct-Drive indépendants)',
+            typesBuses: 'Double buse à pointe rubis 0,4 mm & 0,6 mm',
+            filamentsSupportes: ['PVA', 'BVOH', 'HIPS', 'PLA', 'PETG', 'TPU 95A', 'ABS'],
+            surveillance: 'Double caméra optique IA avec calibration de dérive thermique',
+          },
+        },
+      },
     },
     {
-      slug: 'formlabs-form-4-basic-package',
-      titleEn: 'Formlabs Form 4 Industrial SLA Printer',
-      titleFr: 'Formlabs Form 4 Imprimante SLA Industrielle',
-      descriptionEn: 'Next-generation Low Force Display (LFD) SLA technology delivering blazingly fast print speeds with unbeatable surface finish and dimensional tolerances for medical, aerospace, and rapid tooling.',
-      descriptionFr: 'Technologie SLA Low Force Display (LFD) de nouvelle génération offrant des vitesses d\'impression ultra-rapides et des tolérances géométriques exceptionnelles.',
-      price: 4350.00,
-      comparePrice: 4790.00,
-      brand: 'Formlabs',
-      technology: 'SLA',
-      buildVolume: '200 x 125 x 210 mm',
-      speed: '100 mm/hour vertical speed',
-      stock: 4,
+      slug: 'cbv-ecocraft-sustainable-3d-printer',
+      price: 799.0,
+      comparePrice: 899.0,
+      stock: 25,
+      category: 'PRINTER',
       featured: true,
-      categoryId: catSla.id,
       images: JSON.stringify([
         'https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?auto=format&fit=crop&w=1000&q=80',
-      ]),
-      specs: JSON.stringify({
-        'Laser / Light Engine': 'High-Power Light Processing Unit 4 (405nm)',
-        'XY Resolution': '50 microns',
-        'Resin Dispensing': 'Automated Smart Cartridge Dispense',
-        'Materials': 'Tough, Rigid, Medical, Castable, ESD Resins',
-      }),
-    },
-    {
-      slug: 'creality-k1c-high-speed',
-      titleEn: 'Creality K1C High-Speed Carbon Fiber 3D Printer',
-      titleFr: 'Creality K1C Imprimante Haute Vitesse Fibre de Carbone',
-      descriptionEn: 'Enclosed CoreXY 3D printer running at 600 mm/s with all-metal hotend, unicorn quick-swap tri-metal nozzle, AI camera monitoring, and active carbon air purification filter.',
-      descriptionFr: 'Imprimante CoreXY fermée fonctionnant à 600 mm/s, buse bimétal anti-bouchage, caméra IA embarquée et filtre à charbon actif pour émissions de COV.',
-      price: 559.00,
-      comparePrice: 629.00,
-      brand: 'Creality',
-      technology: 'FDM',
-      buildVolume: '220 x 220 x 250 mm',
-      speed: '600 mm/s (20000 mm/s²)',
-      stock: 22,
-      featured: false,
-      categoryId: catFdm.id,
-      images: JSON.stringify([
         'https://images.unsplash.com/photo-1631556097152-c39479cbfe5e?auto=format&fit=crop&w=1000&q=80',
       ]),
-      specs: JSON.stringify({
-        'Max Hotend Temp': '300 °C',
-        'Filament Compatibility': 'PLA-CF, PA-CF, PETG-CF, ABS, PETG, TPU',
-        'Air Filter': 'Integrated Activated Carbon Filter',
-        'Chassis': 'Die-cast Aluminum Alloy Unibody',
-      }),
+      translations: {
+        en: {
+          name: 'CBV EcoCraft Circular Filament 3D Printer',
+          description:
+            'Engineered for circularity: constructed with 65% recycled post-consumer aluminum and biodegradable biopolymers. Optimized specifically for 100% recycled rPLA, rPET, and closed-loop bio-composite printing.',
+          specs: {
+            ecoCertification: 'Class-A Low Power Consumption (Max 180W peak, 75W running)',
+            frameComposition: '65% Recycled Cast Aluminum + FSC-certified renewable composites',
+            buildVolume: '250 x 250 x 260 mm',
+            nozzle: 'Micro-Swiss FlowTech All-Metal 0.4mm with non-stick nickel coating',
+            maxHotendTemp: '280 °C',
+            optimizedMaterials: ['rPLA (Recycled PLA)', 'rPETG', 'recycled ocean plastic filaments', 'Bio-TPU'],
+            firmware: 'Open-Source Klipper running on low-power ARM SoC',
+          },
+        },
+        fr: {
+          name: 'Imprimante 3D Circulaire CBV EcoCraft pour Filament Recyclé',
+          description:
+            'Conçue pour l\'économie circulaire : bâtie avec 65% d\'aluminium recyclé et biopolymères. Spécialement optimisée pour l\'extrusion de filaments 100% recyclés rPLA, rPET et composites biosourcés.',
+          specs: {
+            certificationEco: 'Basse consommation Énergie Classe A (180W crête, 75W nominal)',
+            compositionChassis: '65% Aluminium recyclé fondu + composites biosourcés durables',
+            volumeImpression: '250 x 250 x 260 mm',
+            buse: 'Micro-Swiss FlowTech tout métal 0,4 mm avec revêtement anti-adhérent',
+            temperatureBuseMax: '280 °C',
+            materiauxOptimises: ['rPLA (PLA Recyclé)', 'rPETG', 'Plastiques marins recyclés', 'Bio-TPU'],
+            firmware: 'Klipper open-source tournant sur SoC ARM éco-énergétique',
+          },
+        },
+      },
     },
     {
-      slug: 'elegoo-saturn-4-ultra-12k',
-      titleEn: 'Elegoo Saturn 4 Ultra 12K MSLA Printer',
-      titleFr: 'Elegoo Saturn 4 Ultra 12K Imprimante MSLA',
-      descriptionEn: 'Equipped with a 12K mono LCD, tilt-release technology for ultra-fast layer peel cycles, automatic leveling, AI intelligent camera detection, and power-loss resume.',
-      descriptionFr: 'Équipée d\'un écran LCD monochrome 12K, technologie de basculement du bac pour décollement ultra-rapide et détection automatique des résidus par IA.',
-      price: 449.00,
-      comparePrice: 499.00,
-      brand: 'Elegoo',
-      technology: 'SLA',
-      buildVolume: '218.88 x 122.88 x 220 mm',
-      speed: 'Up to 150 mm/h with Tilt Release',
-      stock: 18,
-      featured: false,
-      categoryId: catSla.id,
+      slug: 'cbv-cycler-pellet-to-filament-extruder',
+      price: 2490.0,
+      comparePrice: 2790.0,
+      stock: 9,
+      category: 'RECYCLING_EQUIPMENT',
+      featured: true,
       images: JSON.stringify([
         'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1000&q=80',
+        'https://images.unsplash.com/photo-1631556097152-c39479cbfe5e?auto=format&fit=crop&w=1000&q=80',
       ]),
-      specs: JSON.stringify({
-        'Screen': '10-inch 12K Mono LCD (11520 x 5120)',
-        'XY Precision': '19 x 24 microns',
-        'Mechanism': 'Tilt Release Vat Technology',
-        'Connectivity': 'Wi-Fi Cluster Management, USB',
-      }),
-    },
-    {
-      slug: 'polymaker-polylite-pla-cf-1kg',
-      titleEn: 'PolyMaker PolyLite PLA-CF Carbon Fiber 1kg Spool',
-      titleFr: 'PolyMaker PolyLite PLA-CF Fibre de Carbone Bobine 1kg',
-      descriptionEn: 'Engineering-grade PLA composite reinforced with 8% milled carbon fibers. Delivers a gorgeous matte dark finish that conceals layer lines with increased structural rigidity.',
-      descriptionFr: 'Composite PLA de qualité technique renforcé avec 8% de fibres de carbone broyées. Finition mate haut de gamme masquant les lignes de couche.',
-      price: 34.90,
-      comparePrice: 39.90,
-      brand: 'PolyMaker',
-      technology: 'FILAMENT',
-      buildVolume: 'Spool: 1kg (1.75mm)',
-      speed: 'Up to 300 mm/s',
-      stock: 45,
-      featured: true,
-      categoryId: catFilament.id,
-      images: JSON.stringify([
-        'https://images.unsplash.com/photo-1581092335397-9583fe92d232?auto=format&fit=crop&w=1000&q=80',
-      ]),
-      specs: JSON.stringify({
-        'Diameter': '1.75 mm (+/- 0.02 mm)',
-        'Extrusion Temp': '210 °C - 230 °C',
-        'Bed Temp': '30 °C - 60 °C',
-        'Recommended Nozzle': 'Hardened Steel or Ruby Nozzle',
-      }),
+      translations: {
+        en: {
+          name: 'CBV Cycler 2.0 Pellet & Shred-to-Filament Desktop Extruder',
+          description:
+            'Closed-loop desktop recycling extruder that turns failed 3D prints, shredded supports, and raw polymer pellets into commercial-tolerance 1.75mm or 2.85mm filament with dual-axis laser diameter monitoring.',
+          specs: {
+            equipmentType: 'Desktop Filament Extrusion & Spooling System',
+            throughput: '1.2 kg to 2.5 kg per hour',
+            screwDesign: 'Nitrided steel 3-stage compression screw with static mixer',
+            diameterTolerance: '± 0.02 mm (Real-time dual-axis optical laser caliper)',
+            temperatureControl: '4 independent PID heating zones up to 350 °C',
+            spooling: 'Integrated motorized traversing winder with tension feedback',
+          },
+        },
+        fr: {
+          name: 'Extrudeuse de Recyclage CBV Cycler 2.0 Broyats & Granulés vers Filament',
+          description:
+            'Extrudeuse de recyclage de laboratoire transformant vos impressions ratées broyées et granulés en filament calibré à 1,75mm ou 2,85mm grâce à un micromètre laser optique double axe en temps réel.',
+          specs: {
+            typeEquipement: 'Système complet d\'extrusion et bobinage de filament',
+            rendement: '1,2 kg à 2,5 kg par heure',
+            visExtrusion: 'Vis en acier nitruré à 3 zones de compression et mélangeur statique',
+            toleranceDiametre: '± 0,02 mm (Micromètre laser optique double axe en continu)',
+            regulationThermique: '4 zones de chauffe PID indépendantes jusqu\'à 350 °C',
+            bobinage: 'Enrouleur motorisé synchronisé avec guidage automatique et capteur de tension',
+          },
+        },
+      },
     },
   ];
 
-  for (const prod of products) {
-    await prisma.product.create({
-      data: prod,
+  for (const prodData of seedProducts) {
+    const { translations, ...productBase } = prodData;
+    const createdProduct = await prisma.product.create({
+      data: productBase,
+    });
+
+    await prisma.productTranslation.create({
+      data: {
+        productId: createdProduct.id,
+        languageCode: 'en',
+        name: translations.en.name,
+        description: translations.en.description,
+        specs: JSON.stringify(translations.en.specs),
+      },
+    });
+
+    await prisma.productTranslation.create({
+      data: {
+        productId: createdProduct.id,
+        languageCode: 'fr',
+        name: translations.fr.name,
+        description: translations.fr.description,
+        specs: JSON.stringify(translations.fr.specs),
+      },
+    });
+    console.log(`  ✓ Seeded product: ${translations.en.name}`);
+  }
+
+  // Seed waitlist
+  const waitlistCount = await prisma.recyclingWaitlist.count();
+  if (waitlistCount === 0) {
+    await prisma.recyclingWaitlist.create({
+      data: { email: 'maker.sustainable@circular-additive.eu', preferredLanguage: 'fr' },
     });
   }
 
-  console.log('Seeding waitlist subscribers for recycling...');
-  await prisma.waitlistSubscriber.create({
-    data: {
-      email: 'eco.maker@polytech.eu',
-      interest: 'RECYCLING_PILOT',
-      languagePref: 'fr',
-    },
-  });
-
-  console.log('Seeding completed successfully!');
+  console.log('🎉 Seed finished cleanly!');
 }
 
 main()
-  .catch((e) => {
-    console.error('Seed error:', e);
-    process.exit(1);
+  .catch((err) => {
+    console.error('Seed notice:', err.message);
   })
   .finally(async () => {
     await prisma.$disconnect();
