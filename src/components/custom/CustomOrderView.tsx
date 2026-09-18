@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { Locale } from '@/lib/i18n/config';
 import {
-  Sparkles,
+  Layers,
   Send,
   CheckCircle2,
   Phone,
@@ -144,7 +144,7 @@ Mon nom: ${customerName || ''}`
       {/* Header Banner */}
       <div className="text-center space-y-3">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-eco-50 text-eco-600 border border-eco-200 text-xs font-bold uppercase tracking-wider">
-          <Sparkles className="w-3.5 h-3.5" />
+          <Layers className="w-3.5 h-3.5" />
           <span>{isFr ? 'Sur-Mesure & Personnalisation' : 'Custom 3D Printing On-Demand'}</span>
         </div>
         <h1 className="text-3xl sm:text-4xl font-black text-charcoal-black tracking-tight">

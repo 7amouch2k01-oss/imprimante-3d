@@ -7,7 +7,7 @@ import { Logo } from '@/components/ui/Logo';
 import { LanguageSwitcher } from '@/components/navigation/LanguageSwitcher';
 import { useCart } from '@/lib/store/cart-context';
 import { useCurrency } from '@/lib/store/currency-context';
-import { ShoppingBag, Sparkles, Wand2, Grid } from 'lucide-react';
+import { ShoppingBag, Paintbrush, Grid } from 'lucide-react';
 
 interface HeaderProps {
   locale: Locale;
@@ -53,7 +53,7 @@ export function Header({ locale, dictionary }: HeaderProps) {
               href={`/${locale}/custom-order`}
               className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-white bg-eco-500 hover:bg-eco-600 transition-all shadow-xs"
             >
-              <Wand2 className="w-3.5 h-3.5" />
+              <Paintbrush className="w-3.5 h-3.5" />
               <span>{isFr ? 'Commander Sur-Mesure' : 'Custom Order'}</span>
             </Link>
 

@@ -7,7 +7,7 @@ import connectDB from '@/lib/db';
 import Product from '@/lib/models/Product';
 import { ProductType } from '@/lib/types/product';
 import { ProductGrid } from '@/components/catalog/ProductGrid';
-import { Sparkles, Wand2 } from 'lucide-react';
+import { Layers, Paintbrush } from 'lucide-react';
 
 interface CatalogPageProps {
   params: { locale: Locale };
@@ -77,7 +77,7 @@ export default async function CatalogPage({ params }: CatalogPageProps) {
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-surface-border pb-6">
         <div className="space-y-2">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-eco-50 text-eco-600 border border-eco-200">
-            <Sparkles className="w-3.5 h-3.5" />
+            <Layers className="w-3.5 h-3.5" />
             <span>{isFr ? 'Créations & Objets 3D' : '3D Printed Creations'}</span>
           </div>
           <h1 className="text-3xl sm:text-4xl font-black text-charcoal-black tracking-tight">
@@ -94,8 +94,8 @@ export default async function CatalogPage({ params }: CatalogPageProps) {
           href={`/${params.locale}/custom-order`}
           className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-eco-500 hover:bg-eco-600 text-white font-bold text-xs shadow-xs transition-all whitespace-nowrap self-start sm:self-auto"
         >
-          <Wand2 className="w-3.5 h-3.5" />
-          <span>{isFr ? 'Demande Sur-Mesure ✨' : 'Custom Request ✨'}</span>
+          <Paintbrush className="w-3.5 h-3.5" />
+          <span>{isFr ? 'Demande Sur-Mesure' : 'Custom Request'}</span>
         </Link>
       </div>
 

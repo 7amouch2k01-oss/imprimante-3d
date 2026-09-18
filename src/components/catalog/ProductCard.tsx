@@ -6,7 +6,7 @@ import { Locale } from '@/lib/i18n/config';
 import { useCart } from '@/lib/store/cart-context';
 import { useCurrency } from '@/lib/store/currency-context';
 import { ProductType } from '@/lib/types/product';
-import { ShoppingBag, Eye, Zap, Sparkles } from 'lucide-react';
+import { ShoppingBag, Eye, Zap, Check } from 'lucide-react';
 
 export type { ProductType };
 
@@ -57,7 +57,7 @@ export function ProductCard({ product, locale, dictionary }: ProductCardProps) {
           </span>
           {product.featured && (
             <span className="px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-eco-500 text-white shadow-xs flex items-center gap-1">
-              <Sparkles className="w-2.5 h-2.5" />
+              <Check className="w-2.5 h-2.5" />
               Featured
             </span>
           )}

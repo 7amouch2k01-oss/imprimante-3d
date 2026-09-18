@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Locale } from '@/lib/i18n/config';
-import { Leaf, Send, CheckCircle2, AlertCircle, Shield, Recycle, Sparkles } from 'lucide-react';
+import { Leaf, Send, CheckCircle2, AlertCircle, Shield, Recycle } from 'lucide-react';
 
 interface RecyclingTeaserProps {
   locale: Locale;

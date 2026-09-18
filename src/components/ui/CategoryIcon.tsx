@@ -7,7 +7,7 @@ import {
   Gift,
   Coins,
   Wrench,
-  Sparkles,
+  Shapes,
 } from 'lucide-react';
 
 export type CategoryId =
@@ -46,6 +46,6 @@ export function CategoryIcon({ id, className = 'w-5 h-5', size }: CategoryIconPr
       return <Wrench className={commonClasses} size={size} />;
     case 'all':
     default:
-      return <Sparkles className={commonClasses} size={size} />;
+      return <Shapes className={commonClasses} size={size} />;
   }
 }

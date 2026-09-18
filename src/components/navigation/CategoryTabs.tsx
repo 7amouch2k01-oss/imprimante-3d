@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Locale } from '@/lib/i18n/config';
-import { Sparkles, Printer, Recycle } from 'lucide-react';
+import { Layers, Printer, Recycle } from 'lucide-react';
 
 interface CategoryTabsProps {
   locale: Locale;
@@ -53,7 +53,7 @@ export function CategoryTabs({ locale, dictionary }: CategoryTabsProps) {
         <Recycle className={`w-4 h-4 ${isRecyclingActive ? 'text-eco-500' : 'text-charcoal-subtle group-hover:text-charcoal'}`} />
         <span>{dictionary.nav.recycling || 'Recycling / Recyclage'}</span>
         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide uppercase bg-amber-100 text-amber-800 border border-amber-200">
-          <Sparkles className="w-2.5 h-2.5" />
+          <Layers className="w-2.5 h-2.5" />
           {dictionary.nav.comingSoon || 'Coming Soon'}
         </span>
       </Link>

@@ -8,7 +8,7 @@ import { Hero } from '@/components/home/Hero';
 import { ProductCard } from '@/components/catalog/ProductCard';
 import { ProductType } from '@/lib/types/product';
 import { RecyclingTeaser } from '@/components/recycling/RecyclingTeaser';
-import { ArrowRight, Sparkles, Wand2, Truck, ShieldCheck, Heart } from 'lucide-react';
+import { ArrowRight, Layers, Paintbrush, Truck, ShieldCheck, Heart, Sliders } from 'lucide-react';
 
 import { CategoryIcon } from '@/components/ui/CategoryIcon';
 
@@ -96,7 +96,7 @@ export default async function HomePage({ params }: HomePageProps) {
               href={`/${params.locale}/custom-order`}
               className="text-eco-600 hover:text-eco-700 flex items-center gap-1 font-bold normal-case text-xs"
             >
-              <Wand2 className="w-3.5 h-3.5" />
+              <Paintbrush className="w-3.5 h-3.5" />
               <span>{isFr ? 'Demande Sur-Mesure →' : 'Request Custom Item →'}</span>
             </Link>
           </div>
@@ -125,7 +125,7 @@ export default async function HomePage({ params }: HomePageProps) {
         <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4 mb-8">
           <div className="space-y-2">
             <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-eco-500 bg-eco-50 px-2.5 py-1 rounded-md">
-              <Sparkles className="w-3.5 h-3.5" />
+              <Layers className="w-3.5 h-3.5" />
               <span>{isFr ? 'Bestsellers en Tunisie' : 'Tunisia Best Picks'}</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-black text-charcoal-black tracking-tight">
@@ -166,7 +166,7 @@ export default async function HomePage({ params }: HomePageProps) {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="flex items-start gap-4 p-6 rounded-2xl bg-surface-light border border-surface-border">
               <div className="w-12 h-12 rounded-xl bg-eco-50 border border-eco-200 flex items-center justify-center text-eco-500 flex-shrink-0">
-                <Wand2 className="w-6 h-6" />
+                <Sliders className="w-6 h-6" />
               </div>
               <div className="space-y-1">
                 <h3 className="font-bold text-sm text-charcoal-black">
@@ -220,7 +220,7 @@ export default async function HomePage({ params }: HomePageProps) {
         <div className="relative overflow-hidden rounded-3xl bg-charcoal-black text-white p-8 sm:p-12">
           <div className="relative z-10 max-w-2xl space-y-4">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-eco-500/20 text-eco-400 border border-eco-500/30 text-xs font-bold uppercase">
-              <Wand2 className="w-3.5 h-3.5" />
+              <Paintbrush className="w-3.5 h-3.5" />
               <span>{isFr ? 'Service Sur-Mesure' : 'Custom Request'}</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-black tracking-tight">

@@ -15,7 +15,6 @@ import {
   Box,
   Truck,
   RotateCcw,
-  Sparkles,
 } from 'lucide-react';
 
 interface ProductDetailClientProps {

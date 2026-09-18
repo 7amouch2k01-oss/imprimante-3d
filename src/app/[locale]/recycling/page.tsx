@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import { Locale } from '@/lib/i18n/config';
 import { getDictionary } from '@/lib/i18n/get-dictionary';
 import { RecyclingTeaser } from '@/components/recycling/RecyclingTeaser';
-import { Sparkles, Recycle, ArrowDownCircle, Check, Factory, Scale, RefreshCw } from 'lucide-react';
+import { Recycle, ArrowDownCircle, Check, Factory, Scale, RefreshCw } from 'lucide-react';
 
 interface RecyclingPageProps {
   params: { locale: Locale };
@@ -28,7 +28,7 @@ export default async function RecyclingPage({ params }: RecyclingPageProps) {
       <div className="max-w-5xl mx-auto px-4 sm:px-6">
         <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 flex items-center justify-between gap-4">
           <div className="flex items-center gap-2.5">
-            <Sparkles className="w-5 h-5 text-amber-600 flex-shrink-0" />
+            <Recycle className="w-5 h-5 text-amber-600 flex-shrink-0" />
             <p className="text-xs sm:text-sm font-semibold">
               {params.locale === 'fr'
                 ? 'Ce programme est actuellement en phase de test pilote. Inscrivez-vous pour recevoir votre kit de collecte gratuit.'

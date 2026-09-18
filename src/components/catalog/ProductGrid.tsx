@@ -12,8 +12,8 @@ import {
   ArrowUpDown,
   Search,
   RotateCcw,
-  Wand2,
-  Sparkles,
+  Paintbrush,
+  Shapes,
   PackageOpen,
 } from 'lucide-react';
 
@@ -256,7 +256,7 @@ export function ProductGrid({ initialProducts, locale, dictionary }: ProductGrid
           {/* Custom Order Callout in Sidebar */}
           <div className="p-4 rounded-xl bg-gradient-to-br from-eco-50 to-eco-100/50 border border-eco-200 text-left space-y-2.5">
             <div className="flex items-center gap-1.5 text-xs font-bold text-eco-700">
-              <Sparkles className="w-3.5 h-3.5" />
+              <Shapes className="w-3.5 h-3.5" />
               <span>{isFr ? 'Besoin d’un modèle unique ?' : 'Need a custom model?'}</span>
             </div>
             <p className="text-[11px] text-charcoal-muted leading-relaxed">
@@ -302,7 +302,7 @@ export function ProductGrid({ initialProducts, locale, dictionary }: ProductGrid
                   href={`/${locale}/custom-order`}
                   className="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-eco-500 text-white text-xs font-bold hover:bg-eco-600 shadow-xs"
                 >
-                  <Wand2 className="w-3.5 h-3.5" />
+                  <Paintbrush className="w-3.5 h-3.5" />
                   <span>{isFr ? 'Commander Sur-Mesure' : 'Order Custom'}</span>
                 </Link>
               </div>

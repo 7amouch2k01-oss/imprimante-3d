@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { Locale } from '@/lib/i18n/config';
-import { ArrowRight, Sparkles, Wand2, Shield, Heart, MapPin, Zap } from 'lucide-react';
+import { ArrowRight, Layers, Paintbrush, Shield, Heart, MapPin, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface HeroProps {
@@ -30,7 +30,7 @@ export function Hero({ locale, dictionary }: HeroProps) {
               transition={{ duration: 0.4 }}
               className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-eco-50 border border-eco-200 text-eco-600 text-xs font-bold uppercase tracking-wider"
             >
-              <Sparkles className="w-4 h-4 text-eco-500" />
+              <Layers className="w-4 h-4 text-eco-500" />
               <span>{isFr ? 'Atelier d’Impression 3D Tunisie' : '3D Printing Studio Tunisia'}</span>
               <span className="w-1.5 h-1.5 rounded-full bg-eco-500" />
               <span className="text-charcoal-muted font-semibold">
@@ -78,8 +78,8 @@ export function Hero({ locale, dictionary }: HeroProps) {
                 href={`/${locale}/custom-order`}
                 className="inline-flex items-center justify-center gap-2.5 px-7 py-4 rounded-xl bg-eco-500 hover:bg-eco-600 text-white font-bold text-sm shadow-md hover:shadow-lg transition-all focus:outline-none"
               >
-                <Wand2 className="w-4 h-4" />
-                <span>{isFr ? 'Commander du Sur-Mesure ✨' : 'Request Custom 3D Order ✨'}</span>
+                <Paintbrush className="w-4 h-4" />
+                <span>{isFr ? 'Commander du Sur-Mesure' : 'Request Custom 3D Order'}</span>
               </Link>
 
               <Link
