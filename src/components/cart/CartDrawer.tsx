@@ -50,14 +50,14 @@ export function CartDrawer({ locale, dictionary }: CartDrawerProps) {
             aria-hidden="true"
           />
 
-          <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
+          <div className="fixed inset-y-0 right-0 max-w-full flex pl-0 sm:pl-10">
             <motion.div
               ref={drawerRef}
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-              className="w-screen max-w-md bg-surface-light shadow-2xl flex flex-col border-l border-surface-border"
+              className="w-screen max-w-full sm:max-w-md bg-surface-light shadow-2xl flex flex-col border-l border-surface-border"
             >
               {/* Drawer Header */}
               <div className="flex items-center justify-between px-6 py-5 border-b border-surface-border bg-surface-subtle">
