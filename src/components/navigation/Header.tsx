@@ -154,85 +154,95 @@ export function Header({ locale, dictionary }: HeaderProps) {
 
       {/* Mobile Drawer Menu (Slide-down with backdrop overlay) */}
       {isMobileMenuOpen && (
-        <div className="md:hidden fixed inset-x-0 top-[calc(100%+1px)] z-50 bg-white/98 backdrop-blur-lg border-b border-surface-border shadow-xl animate-in slide-in-from-top-3 duration-200">
-          <div className="px-4 py-6 space-y-5 max-h-[80vh] overflow-y-auto">
-            {/* Primary Action Button */}
-            <Link
-              href={`/${locale}/custom-order`}
-              className="w-full flex items-center justify-center gap-2.5 py-3.5 px-4 rounded-xl bg-eco-500 hover:bg-eco-600 text-white font-bold text-sm shadow-md transition-all"
-            >
-              <Paintbrush className="w-4 h-4" />
-              <span>{isFr ? 'Commander du Sur-Mesure' : 'Order Custom 3D Item'}</span>
-            </Link>
+        <>
+          {/* Backdrop Blur Overlay */}
+          <div
+            className="md:hidden fixed inset-0 top-[calc(100%+1px)] z-40 bg-charcoal-black/50 backdrop-blur-sm transition-opacity"
+            onClick={() => setIsMobileMenuOpen(false)}
+            aria-hidden="true"
+          />
 
-            {/* Navigation Links */}
-            <div className="space-y-1 bg-surface-subtle p-2 rounded-2xl border border-surface-border">
+          {/* Drawer Menu Content */}
+          <div className="md:hidden fixed inset-x-0 top-[calc(100%+1px)] z-50 bg-white border-b-2 border-surface-border shadow-2xl animate-in slide-in-from-top-2 duration-200">
+            <div className="px-4 py-5 space-y-4 max-h-[calc(100vh-120px)] overflow-y-auto bg-white">
+              {/* Primary Action Button */}
               <Link
-                href={`/${locale}/catalog`}
-                className="flex items-center justify-between px-4 py-3 rounded-xl text-sm font-bold text-charcoal hover:bg-white hover:text-eco-600 transition-all"
+                href={`/${locale}/custom-order`}
+                className="w-full flex items-center justify-center gap-2.5 py-3.5 px-4 rounded-xl bg-eco-500 hover:bg-eco-600 text-white font-bold text-sm shadow-md transition-all"
               >
-                <div className="flex items-center gap-3">
-                  <Grid className="w-4 h-4 text-charcoal-muted" />
-                  <span>{isFr ? 'Catalogue Produits 3D' : '3D Products Catalog'}</span>
-                </div>
-                <ArrowRight className="w-4 h-4 text-charcoal-subtle" />
+                <Paintbrush className="w-4 h-4" />
+                <span>{isFr ? 'Commander du Sur-Mesure' : 'Order Custom 3D Item'}</span>
               </Link>
 
-              <Link
-                href={`/${locale}/recycling`}
-                className="flex items-center justify-between px-4 py-3 rounded-xl text-sm font-semibold text-charcoal hover:bg-white hover:text-eco-600 transition-all"
-              >
-                <div className="flex items-center gap-3">
-                  <Recycle className="w-4 h-4 text-charcoal-muted" />
-                  <span>{isFr ? 'Éco-Recyclage de filaments' : 'Filament Recycling'}</span>
-                </div>
-                <span className="text-[10px] px-2 py-0.5 rounded-md bg-surface-border text-charcoal-black font-bold uppercase">
-                  Bientôt
-                </span>
-              </Link>
-            </div>
+              {/* Navigation Links */}
+              <div className="space-y-1 bg-surface-subtle p-2 rounded-2xl border border-surface-border">
+                <Link
+                  href={`/${locale}/catalog`}
+                  className="flex items-center justify-between px-4 py-3 rounded-xl text-sm font-bold text-charcoal hover:bg-white hover:text-eco-600 transition-all"
+                >
+                  <div className="flex items-center gap-3">
+                    <Grid className="w-4 h-4 text-charcoal-muted" />
+                    <span>{isFr ? 'Catalogue Produits 3D' : '3D Products Catalog'}</span>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-charcoal-subtle" />
+                </Link>
 
-            {/* Controls: Currency & Language Switcher in Mobile Drawer */}
-            <div className="pt-2 border-t border-surface-border/60 flex items-center justify-between">
-              <div>
-                <span className="text-xs font-bold text-charcoal-muted uppercase tracking-wider block mb-1.5">
-                  {isFr ? 'Devise' : 'Currency'}
-                </span>
-                <div className="flex items-center p-1 rounded-xl bg-surface-subtle border border-surface-border text-xs font-bold text-charcoal">
-                  <button
-                    type="button"
-                    onClick={() => setCurrency('TND')}
-                    className={`px-3 py-1.5 rounded-lg transition-all ${
-                      currency === 'TND'
-                        ? 'bg-eco-500 text-white shadow-xs'
-                        : 'text-charcoal-muted hover:text-charcoal'
-                    }`}
-                  >
-                    DT (TND)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setCurrency('EUR')}
-                    className={`px-3 py-1.5 rounded-lg transition-all ${
-                      currency === 'EUR'
-                        ? 'bg-eco-500 text-white shadow-xs'
-                        : 'text-charcoal-muted hover:text-charcoal'
-                    }`}
-                  >
-                    EUR (€)
-                  </button>
-                </div>
+                <Link
+                  href={`/${locale}/recycling`}
+                  className="flex items-center justify-between px-4 py-3 rounded-xl text-sm font-semibold text-charcoal hover:bg-white hover:text-eco-600 transition-all"
+                >
+                  <div className="flex items-center gap-3">
+                    <Recycle className="w-4 h-4 text-charcoal-muted" />
+                    <span>{isFr ? 'Éco-Recyclage de filaments' : 'Filament Recycling'}</span>
+                  </div>
+                  <span className="text-[10px] px-2 py-0.5 rounded-md bg-surface-border text-charcoal-black font-bold uppercase">
+                    Bientôt
+                  </span>
+                </Link>
               </div>
 
-              <div>
-                <span className="text-xs font-bold text-charcoal-muted uppercase tracking-wider block mb-1.5 text-right">
-                  {isFr ? 'Langue' : 'Language'}
-                </span>
-                <LanguageSwitcher currentLocale={locale} />
+              {/* Controls: Currency & Language Switcher in Mobile Drawer */}
+              <div className="pt-3 border-t border-surface-border flex items-center justify-between gap-2">
+                <div>
+                  <span className="text-[11px] font-bold text-charcoal-muted uppercase tracking-wider block mb-1">
+                    {isFr ? 'Devise' : 'Currency'}
+                  </span>
+                  <div className="flex items-center p-1 rounded-xl bg-surface-subtle border border-surface-border text-xs font-bold text-charcoal">
+                    <button
+                      type="button"
+                      onClick={() => setCurrency('TND')}
+                      className={`px-3 py-1.5 rounded-lg transition-all ${
+                        currency === 'TND'
+                          ? 'bg-eco-500 text-white shadow-xs'
+                          : 'text-charcoal-muted hover:text-charcoal'
+                      }`}
+                    >
+                      DT (TND)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCurrency('EUR')}
+                      className={`px-3 py-1.5 rounded-lg transition-all ${
+                        currency === 'EUR'
+                          ? 'bg-eco-500 text-white shadow-xs'
+                          : 'text-charcoal-muted hover:text-charcoal'
+                      }`}
+                    >
+                      EUR (€)
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <span className="text-[11px] font-bold text-charcoal-muted uppercase tracking-wider block mb-1 text-right">
+                    {isFr ? 'Langue' : 'Language'}
+                  </span>
+                  <LanguageSwitcher currentLocale={locale} />
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        </>
       )}
     </header>
   );
