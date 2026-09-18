@@ -1,5 +1,4 @@
 #!/bin/sh
-set -e
 
 echo "🚀 Starting deployment bootstrap..."
 
@@ -10,10 +9,11 @@ node scripts/prepare-db.js || true
 echo "📦 Running prisma db push..."
 npx prisma db push --accept-data-loss || true
 
-# 3. Seed database using plain Node (lightweight, zero compilation overhead)
+# 3. Seed database using plain Node (non-blocking)
 echo "🌱 Running database seed..."
 node prisma/seed.js || true
 
-# 4. Start Next.js server
-echo "✨ Starting Next.js production server..."
-exec npm run start
+# 4. Use Railway's injected PORT (default to 3000) and bind to 0.0.0.0
+APP_PORT="${PORT:-3000}"
+echo "✨ Starting Next.js production server on 0.0.0.0:${APP_PORT}..."
+exec npx next start -H 0.0.0.0 -p "${APP_PORT}"
