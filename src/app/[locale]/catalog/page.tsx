@@ -9,6 +9,9 @@ import { ProductType } from '@/lib/types/product';
 import { ProductGrid } from '@/components/catalog/ProductGrid';
 import { Layers, Paintbrush } from 'lucide-react';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 interface CatalogPageProps {
   params: { locale: Locale };
 }
