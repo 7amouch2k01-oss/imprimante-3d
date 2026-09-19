@@ -23,10 +23,17 @@ export default function CustomOrdersPage() {
 
   async function fetchOrders() {
     setLoading(true);
-    const res = await fetch('/api/custom-orders');
-    const data = await res.json();
-    setOrders(data.orders ?? []);
-    setLoading(false);
+    try {
+      const res = await fetch('/api/custom-orders');
+      const data = await res.json();
+      const list = data.requests || data.orders || [];
+      setOrders(list);
+    } catch (e) {
+      console.error('Failed to fetch custom orders:', e);
+      setOrders([]);
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => { fetchOrders(); }, []);
@@ -43,8 +50,9 @@ export default function CustomOrdersPage() {
   }
 
   function whatsappLink(order: any) {
-    const phone = (order.phone ?? '').replace(/\D/g, '');
-    const name = order.name ?? 'client';
+    const rawPhone = order.customerPhone || order.phone || '';
+    const phone = rawPhone.replace(/\D/g, '');
+    const name = order.customerName || order.name || 'client';
     const cat = CATEGORY_LABELS[order.category] ?? order.category;
     const msg = encodeURIComponent(
       `Bonjour ${name}, nous avons bien reçu votre demande personnalisée CBV-3D (${cat}). Nous allons vous contacter très bientôt pour confirmer les détails.`
@@ -94,8 +102,9 @@ export default function CustomOrdersPage() {
                 orders.map((order: any) => (
                   <tr key={order._id} className="border-b border-zinc-50 hover:bg-zinc-50 transition-colors">
                     <td className="px-5 py-3">
-                      <p className="font-medium text-zinc-800">{order.name ?? '—'}</p>
-                      <p className="text-xs text-zinc-400">{order.phone ?? ''}</p>
+                      <p className="font-medium text-zinc-800">{order.customerName || order.name || '—'}</p>
+                      <p className="text-xs text-zinc-400">{order.customerPhone || order.phone || ''}</p>
+                      {order.customerEmail && <p className="text-[11px] text-zinc-400">{order.customerEmail}</p>}
                     </td>
                     <td className="px-5 py-3">
                       <span className="text-xs bg-zinc-100 text-zinc-600 px-2 py-0.5 rounded border border-zinc-200">
@@ -103,10 +112,32 @@ export default function CustomOrdersPage() {
                       </span>
                     </td>
                     <td className="px-5 py-3 text-zinc-600 max-w-xs">
-                      <p className="line-clamp-2 text-xs leading-relaxed">{order.description ?? '—'}</p>
+                      {order.customText && (
+                        <p className="text-xs font-medium text-zinc-800">
+                          Texte: <span className="font-normal">{order.customText}</span>
+                        </p>
+                      )}
+                      {order.colorPreference && (
+                        <p className="text-xs text-zinc-500">
+                          Couleur: {order.colorPreference}
+                        </p>
+                      )}
+                      {order.dimensions && (
+                        <p className="text-xs text-zinc-500">
+                          Dim: {order.dimensions}
+                        </p>
+                      )}
+                      {order.notes && (
+                        <p className="text-xs text-zinc-500 line-clamp-1 italic">
+                          {order.notes}
+                        </p>
+                      )}
+                      {order.description && (
+                        <p className="text-xs text-zinc-500 line-clamp-1">{order.description}</p>
+                      )}
                     </td>
-                    <td className="px-5 py-3 text-zinc-700 font-medium">
-                      {order.budget ? `${order.budget} DT` : '—'}
+                    <td className="px-5 py-3 text-zinc-700 font-medium text-xs">
+                      {order.budget ? `${order.budget} DT` : 'Sur devis'}
                     </td>
                     <td className="px-5 py-3">
                       <StatusBadge status={order.status} />

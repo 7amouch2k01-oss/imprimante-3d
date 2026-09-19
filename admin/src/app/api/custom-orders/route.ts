@@ -8,7 +8,7 @@ export async function GET() {
   try {
     await connectDB();
     const requests = await CustomRequest.find({}).sort({ createdAt: -1 }).lean();
-    return NextResponse.json({ requests });
+    return NextResponse.json({ requests, orders: requests });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
