@@ -7,11 +7,13 @@ import {
   ShoppingCart,
   Package,
   Hammer,
+  BarChart3,
   LogOut,
 } from 'lucide-react';
 
 const navItems = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/analytics', label: 'Statistiques & Analytics', icon: BarChart3 },
   { href: '/custom-orders', label: 'Commandes custom', icon: Hammer },
   { href: '/orders', label: 'Commandes', icon: ShoppingCart },
   { href: '/products', label: 'Produits', icon: Package },

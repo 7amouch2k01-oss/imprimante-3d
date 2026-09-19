@@ -6,6 +6,7 @@ import { Locale } from '@/lib/i18n/config';
 import { ProductType } from '@/lib/types/product';
 import { useCart } from '@/lib/store/cart-context';
 import { useCurrency } from '@/lib/store/currency-context';
+import { ProductReviews } from '@/components/catalog/ProductReviews';
 import {
   ShoppingBag,
   ArrowLeft,
@@ -249,6 +250,13 @@ export function ProductDetailClient({
           </div>
         </section>
       )}
+
+      {/* Interactive 5-Star Reviews & Comments Section */}
+      <ProductReviews
+        productId={product.id}
+        productName={product.name}
+        locale={locale}
+      />
     </div>
   );
 }

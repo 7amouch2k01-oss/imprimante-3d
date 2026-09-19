@@ -72,7 +72,7 @@ export async function GET(
         rating: r.rating,
         comment: r.comment,
         createdAt: r.createdAt,
-        user: { name: (r.userId as any)?.name || 'Anonymous' },
+        user: { name: r.userName || (r as any).userId?.name || 'Client CBV-3D', city: r.userCity },
       })),
       reviewsCount: reviews.length,
       averageRating,
