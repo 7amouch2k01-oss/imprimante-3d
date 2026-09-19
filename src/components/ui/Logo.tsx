@@ -22,10 +22,17 @@ export function Logo({ className = '', size = 'md', showSubtitle = true }: LogoP
       <div className="relative flex items-center justify-center rounded-xl bg-white border border-surface-border shadow-xs p-1 transition-transform duration-200 group-hover:scale-105">
         <img
           src="/images/logo.png"
-          alt="CBV-3D PRINTING Logo"
+          alt="CBV-3D Logo"
           width={current.width}
           height={current.height}
           className="object-contain"
+          onError={(e) => {
+            const target = e.currentTarget;
+            if (!target.dataset.triedJpg) {
+              target.dataset.triedJpg = 'true';
+              target.src = '/images/logo.jpg';
+            }
+          }}
         />
       </div>
 
