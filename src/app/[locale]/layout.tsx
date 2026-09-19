@@ -41,8 +41,10 @@ export default async function LocaleLayout({
 }) {
   const dictionary = await getDictionary(params.locale);
 
+  const isRtl = params.locale === 'ar';
+
   return (
-    <html lang={params.locale} className="h-full bg-white text-charcoal">
+    <html lang={params.locale} dir={isRtl ? 'rtl' : 'ltr'} className="h-full bg-white text-charcoal">
       <body className="flex flex-col min-h-screen antialiased bg-white text-charcoal selection:bg-eco-100 selection:text-eco-900">
         <CurrencyProvider>
           <CartProvider>

@@ -42,16 +42,16 @@ export function LanguageSwitcher({ currentLocale }: LanguageSwitcherProps) {
     <div className="inline-flex items-center p-1 rounded-lg bg-surface-muted border border-surface-border text-xs font-semibold">
       <button
         type="button"
-        onClick={() => handleSwitch('en')}
+        onClick={() => handleSwitch('ar')}
         disabled={isPending}
         className={`px-2.5 py-1 rounded-md transition-all duration-150 ${
-          currentLocale === 'en'
+          currentLocale === 'ar'
             ? 'bg-surface-light text-eco-500 font-bold shadow-sm border border-surface-border'
             : 'text-charcoal-muted hover:text-charcoal hover:bg-surface-subtle'
         }`}
-        aria-label="Switch to English"
+        aria-label="التحويل إلى العربية"
       >
-        EN
+        عربي
       </button>
       <button
         type="button"
@@ -65,6 +65,19 @@ export function LanguageSwitcher({ currentLocale }: LanguageSwitcherProps) {
         aria-label="Passer au Français"
       >
         FR
+      </button>
+      <button
+        type="button"
+        onClick={() => handleSwitch('en')}
+        disabled={isPending}
+        className={`px-2.5 py-1 rounded-md transition-all duration-150 ${
+          currentLocale === 'en'
+            ? 'bg-surface-light text-eco-500 font-bold shadow-sm border border-surface-border'
+            : 'text-charcoal-muted hover:text-charcoal hover:bg-surface-subtle'
+        }`}
+        aria-label="Switch to English"
+      >
+        EN
       </button>
     </div>
   );
