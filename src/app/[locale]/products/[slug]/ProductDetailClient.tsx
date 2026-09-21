@@ -34,10 +34,22 @@ export function ProductDetailClient({
   const [quantity, setQuantity] = useState(1);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
-  let images: string[] = [
-    'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=800&q=80',
-  ];
-  if (Array.isArray(product.images)) {
+  const CATEGORY_FALLBACK_IMAGES: Record<string, string> = {
+    KEYCHAINS: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80',
+    PHONE_STANDS: 'https://images.unsplash.com/photo-1586105251261-72a756497a11?w=800&auto=format&fit=crop&q=80',
+    GAMING_ACCESSORIES: 'https://images.unsplash.com/photo-1600080972464-8e5f35f63d08?w=800&auto=format&fit=crop&q=80',
+    DECORATION: 'https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?w=800&auto=format&fit=crop&q=80',
+    GIFTS: 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=800&auto=format&fit=crop&q=80',
+    PIGGY_BANKS: 'https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=800&auto=format&fit=crop&q=80',
+    UTILITY: 'https://images.unsplash.com/photo-1588508065123-287b28e013da?w=800&auto=format&fit=crop&q=80',
+  };
+
+  const defaultCategoryImg =
+    CATEGORY_FALLBACK_IMAGES[product.category] ||
+    'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80';
+
+  let images: string[] = [defaultCategoryImg];
+  if (Array.isArray(product.images) && product.images.length > 0 && product.images[0]) {
     images = product.images;
   } else if (typeof product.images === 'string') {
     try {
@@ -99,6 +111,13 @@ export function ProductDetailClient({
               src={images[activeImageIndex] || images[0]}
               alt={title}
               className="w-full h-full object-cover"
+              onError={(e) => {
+                const target = e.currentTarget;
+                if (!target.dataset.fallback) {
+                  target.dataset.fallback = 'true';
+                  target.src = defaultCategoryImg;
+                }
+              }}
             />
             <div className="absolute top-4 left-4">
               <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-surface-light/95 backdrop-blur border border-surface-border text-eco-500 shadow-xs">

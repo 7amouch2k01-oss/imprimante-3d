@@ -7,8 +7,19 @@ import { useCart } from '@/lib/store/cart-context';
 import { useCurrency } from '@/lib/store/currency-context';
 import { ProductType } from '@/lib/types/product';
 import { ShoppingBag, Eye, Zap, Check } from 'lucide-react';
+import { CategoryIcon } from '@/components/ui/CategoryIcon';
 
 export type { ProductType };
+
+const CATEGORY_FALLBACK_IMAGES: Record<string, string> = {
+  KEYCHAINS: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80',
+  PHONE_STANDS: 'https://images.unsplash.com/photo-1586105251261-72a756497a11?w=800&auto=format&fit=crop&q=80',
+  GAMING_ACCESSORIES: 'https://images.unsplash.com/photo-1600080972464-8e5f35f63d08?w=800&auto=format&fit=crop&q=80',
+  DECORATION: 'https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?w=800&auto=format&fit=crop&q=80',
+  GIFTS: 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=800&auto=format&fit=crop&q=80',
+  PIGGY_BANKS: 'https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=800&auto=format&fit=crop&q=80',
+  UTILITY: 'https://images.unsplash.com/photo-1588508065123-287b28e013da?w=800&auto=format&fit=crop&q=80',
+};
 
 interface ProductCardProps {
   product: ProductType;
@@ -20,10 +31,14 @@ export function ProductCard({ product, locale, dictionary }: ProductCardProps) {
   const { addItem } = useCart();
   const { formatPrice } = useCurrency();
 
+  const categoryDefault =
+    CATEGORY_FALLBACK_IMAGES[product.category] ||
+    'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80';
+
   const imageUrl =
-    Array.isArray(product.images) && product.images.length > 0
+    Array.isArray(product.images) && product.images.length > 0 && product.images[0]
       ? product.images[0]
-      : 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=800&q=80';
+      : categoryDefault;
 
   const technology =
     product.specs?.technology || product.specs?.Technology || (product.category === 'PRINTER' ? 'FDM' : 'Hardware');
@@ -49,7 +64,7 @@ export function ProductCard({ product, locale, dictionary }: ProductCardProps) {
   return (
     <div className="group flex flex-col bg-surface-light rounded-2xl border border-surface-border hover:border-charcoal-black hover:shadow-xl transition-all duration-300 overflow-hidden">
       {/* Visual / Image Area */}
-      <div className="relative aspect-4/3 bg-surface-subtle overflow-hidden border-b border-surface-border">
+      <div className="relative aspect-4/3 bg-surface-subtle overflow-hidden border-b border-surface-border flex items-center justify-center">
         {/* Technology Badge */}
         <div className="absolute top-3 left-3 z-10 flex items-center gap-1.5">
           <span className="px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider bg-surface-light/90 backdrop-blur border border-surface-border text-charcoal shadow-xs">
@@ -80,7 +95,7 @@ export function ProductCard({ product, locale, dictionary }: ProductCardProps) {
             const target = e.currentTarget;
             if (!target.dataset.fallback) {
               target.dataset.fallback = 'true';
-              target.src = 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=800&auto=format&fit=crop&q=80';
+              target.src = categoryDefault;
             }
           }}
         />

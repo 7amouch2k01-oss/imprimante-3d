@@ -8,6 +8,9 @@ import Product from '@/lib/models/Product';
 import { ProductType } from '@/lib/types/product';
 import { ProductDetailClient } from './ProductDetailClient';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 interface ProductPageProps {
   params: { locale: Locale; slug: string };
 }
