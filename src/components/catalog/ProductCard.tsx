@@ -62,9 +62,9 @@ export function ProductCard({ product, locale, dictionary }: ProductCardProps) {
   };
 
   return (
-    <div className="group flex flex-col bg-surface-light rounded-2xl border border-surface-border hover:border-charcoal-black hover:shadow-xl transition-all duration-300 overflow-hidden">
-      {/* Visual / Image Area */}
-      <div className="relative aspect-4/3 bg-surface-subtle overflow-hidden border-b border-surface-border flex items-center justify-center">
+    <div className="group flex flex-col h-full bg-surface-light rounded-2xl border border-surface-border hover:border-charcoal-black hover:shadow-xl transition-all duration-300 overflow-hidden">
+      {/* Visual / Image Area - strict fixed height and aspect */}
+      <div className="relative h-52 w-full bg-surface-subtle overflow-hidden border-b border-surface-border flex-shrink-0">
         {/* Technology Badge */}
         <div className="absolute top-3 left-3 z-10 flex items-center gap-1.5">
           <span className="px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider bg-surface-light/90 backdrop-blur border border-surface-border text-charcoal shadow-xs">
@@ -112,51 +112,55 @@ export function ProductCard({ product, locale, dictionary }: ProductCardProps) {
         </div>
       </div>
 
-      {/* Content Area */}
-      <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
+      {/* Content Area - standardized heights for perfect row alignment */}
+      <div className="p-5 flex-1 flex flex-col justify-between">
         <div className="space-y-2">
-          <h3 className="font-bold text-base text-charcoal-black line-clamp-1 group-hover:text-eco-500 transition-colors">
+          <h3 className="font-bold text-base text-charcoal-black line-clamp-1 h-6 group-hover:text-eco-500 transition-colors">
             <Link href={`/${locale}/products/${product.slug}`}>{product.name}</Link>
           </h3>
-          <p className="text-xs text-charcoal-muted line-clamp-2 leading-relaxed">
+          <p className="text-xs text-charcoal-muted line-clamp-2 h-9 leading-relaxed">
             {product.description}
           </p>
         </div>
 
-        {/* Specs Highlights */}
-        <div className="pt-2 border-t border-surface-border/80 flex items-center justify-between text-[11px] text-charcoal-subtle font-medium">
-          {speed && (
-            <div className="flex items-center gap-1">
-              <Zap className="w-3 h-3 text-eco-500" />
-              <span>{String(speed)}</span>
-            </div>
-          )}
-          {buildVolume && (
-            <span className="text-charcoal-muted">{String(buildVolume)}</span>
-          )}
-        </div>
-
-        {/* Pricing & CTA Button */}
-        <div className="pt-2 flex items-center justify-between gap-2">
-          <div>
-            <span className="text-lg font-black text-charcoal-black block leading-none">
-              {formatPrice(product.price)}
-            </span>
-            {product.comparePrice && product.comparePrice > product.price && (
-              <span className="text-xs text-charcoal-subtle line-through">
-                {formatPrice(product.comparePrice)}
-              </span>
+        <div className="pt-4 space-y-3">
+          {/* Specs Highlights */}
+          <div className="pt-2 border-t border-surface-border/80 flex items-center justify-between text-[11px] text-charcoal-subtle font-medium min-h-[24px]">
+            {speed ? (
+              <div className="flex items-center gap-1">
+                <Zap className="w-3 h-3 text-eco-500" />
+                <span>{String(speed)}</span>
+              </div>
+            ) : (
+              <span className="text-charcoal-subtle">FDM Precision</span>
+            )}
+            {buildVolume && (
+              <span className="text-charcoal-muted">{String(buildVolume)}</span>
             )}
           </div>
 
-          <button
-            type="button"
-            onClick={handleAddToCart}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-eco-500 hover:bg-eco-600 text-white text-xs font-bold shadow-xs hover:shadow transition-all focus:outline-none"
-          >
-            <ShoppingBag className="w-3.5 h-3.5" />
-            <span>{dictionary.catalog.addToCart}</span>
-          </button>
+          {/* Pricing & CTA Button */}
+          <div className="flex items-center justify-between gap-2">
+            <div>
+              <span className="text-lg font-black text-charcoal-black block leading-none">
+                {formatPrice(product.price)}
+              </span>
+              {product.comparePrice && product.comparePrice > product.price && (
+                <span className="text-xs text-charcoal-subtle line-through mt-0.5 block">
+                  {formatPrice(product.comparePrice)}
+                </span>
+              )}
+            </div>
+
+            <button
+              type="button"
+              onClick={handleAddToCart}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-eco-500 hover:bg-eco-600 text-white text-xs font-bold shadow-xs hover:shadow transition-all focus:outline-none"
+            >
+              <ShoppingBag className="w-3.5 h-3.5" />
+              <span>{dictionary.catalog.addToCart}</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
